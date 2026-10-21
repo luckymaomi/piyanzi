@@ -1,0 +1,44 @@
+<div align="center">
+
+# 皮燕子
+
+[项目主页](https://luckymaomi.github.io/piyanzi/) · [GitHub](https://github.com/luckymaomi/piyanzi)
+
+<p>
+  <img alt="Static site" src="https://img.shields.io/badge/Architecture-static%20GitHub%20Pages-0f766e">
+  <a href="https://www.python.org/"><img alt="Python 3" src="https://img.shields.io/badge/Python-3-3776AB"></a>
+  <a href="https://marked.js.org/"><img alt="marked" src="https://img.shields.io/badge/Markdown-marked-222222"></a>
+  <a href="./LICENSE"><img alt="MIT License" src="https://img.shields.io/github/license/luckymaomi/piyanzi?color=0f766e"></a>
+</p>
+</div>
+
+皮燕子是 Cursor / Agent 用的业务 Skill 合集：页面可浏览、搜索、下载单篇 Markdown，也可一键打包整包。唤醒词与对主人话术见 `AGENTS.md`。
+
+## 当前 Skill
+
+状态：✅ 已启用 · 🧪 Beta 测试 · 🧊 已弃用
+
+| Skill | 状态 | 功能 |
+| --- | --- | --- |
+| 检查单手册比对填写 | ✅ | 迎审检查单「符合性声明」按手册原文落笔；条款对上就填、对不上留空；可按条款抽 PDF 佐证 |
+| 副驾驶流转更新 | ✅ | 货航 777 副驾驶积分总表：名单、等级/报务、考核、预警、总分、可流转 |
+
+## 本地预览
+
+仓库根目录执行：
+
+```powershell
+python index.py
+```
+
+默认打开 `http://localhost:4570/index.html`。常用参数：`--port`、`--no-open`、`--check`。
+
+## 开源协议与贡献
+
+本项目遵循 [MIT License](./LICENSE) 开源协议。
+
+欢迎提交 Issue 或 Pull Request 改进 Skill、修复问题、补充文档。贡献时尽量说明问题场景、输入样例、期望结果和验证方式；改能力请改对应 Skill 文件的报装 / 综述 / 细则，页面清单改 `manifest.json`。
+
+## 目前
+
+服务于：南货航飞行部、中国南方航空货运有限公司。

@@ -1,0 +1,24 @@
+{
+  "name": "皮燕子",
+  "packPrefix": "piyanzi",
+  "files": [
+    {
+      "id": "agents",
+      "title": "AGENTS",
+      "path": "AGENTS.md",
+      "listed": false
+    },
+    {
+      "id": "checklist",
+      "title": "检查单手册比对填写",
+      "path": "检查单手册比对填写.md",
+      "listed": true
+    },
+    {
+      "id": "flow",
+      "title": "副驾驶流转更新",
+      "path": "副驾驶流转更新.md",
+      "listed": true
+    }
+  ]
+}
