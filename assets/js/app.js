@@ -72,6 +72,13 @@ function wrapTables(root) {
   });
 }
 
+function downloadName(file) {
+  const title = String(file.title || file.id || "file")
+    .replace(/[\\/:*?"<>|]/g, "_")
+    .trim() || "file";
+  return /\.md$/i.test(title) ? title : `${title}.md`;
+}
+
 function triggerDownload(filename, text) {
   const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -205,8 +212,7 @@ function renderToolbar(file) {
   downloadBtn.className = "memo-download-button";
   downloadBtn.textContent = "下载 Markdown";
   downloadBtn.addEventListener("click", () => {
-    const name = file.path.split("/").pop() || `${file.id}.md`;
-    triggerDownload(name, activeMarkdown);
+    triggerDownload(downloadName(file), activeMarkdown);
   });
 
   toolbar.append(downloadBtn);
@@ -317,15 +323,18 @@ function handleSearchInput() {
 async function packDownload() {
   if (!manifest) return;
   els.pack.disabled = true;
-  const original = els.pack.textContent;
-  els.pack.textContent = "打包中…";
+  els.pack.setAttribute("aria-busy", "true");
 
   try {
     const zip = new JSZip();
     const folder = zip.folder(manifest.packPrefix || "piyanzi");
+    const used = new Set();
 
     for (const file of allFiles()) {
-      folder.file(file.path, await loadRaw(file.path));
+      let name = downloadName(file);
+      if (used.has(name)) name = `${file.id}-${name}`;
+      used.add(name);
+      folder.file(name, await loadRaw(file.path));
     }
 
     folder.file("manifest.json", `${JSON.stringify(manifest, null, 2)}\n`);
@@ -344,7 +353,7 @@ async function packDownload() {
     els.searchStatus.textContent = "打包失败";
   } finally {
     els.pack.disabled = false;
-    els.pack.textContent = original;
+    els.pack.removeAttribute("aria-busy");
   }
 }
 

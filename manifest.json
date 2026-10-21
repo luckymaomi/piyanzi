@@ -11,13 +11,13 @@
     {
       "id": "checklist",
       "title": "检查单手册比对填写",
-      "path": "检查单手册比对填写.md",
+      "path": "jianchadan-shouce-bidui-tianxie.md",
       "listed": true
     },
     {
       "id": "flow",
       "title": "副驾驶流转更新",
-      "path": "副驾驶流转更新.md",
+      "path": "fujiashi-liuzhuan-gengxin.md",
       "listed": true
     }
   ]
