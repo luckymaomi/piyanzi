@@ -25,6 +25,24 @@
       "title": "培训完成粗统计",
       "path": "core/peixun-wancheng-cutongji.md",
       "listed": true
+    },
+    {
+      "id": "zizhi-daima",
+      "title": "资质代码",
+      "path": "core/zizhi-daima.md",
+      "listed": true
+    },
+    {
+      "id": "teshu-jichang-zige-daima",
+      "title": "特殊机场资格代码",
+      "path": "core/teshu-jichang-zige-daima.md",
+      "listed": true
+    },
+    {
+      "id": "zizhi-luru-jiancha-yutishi",
+      "title": "资质录入检查预提示",
+      "path": "core/zizhi-luru-jiancha-yutishi.md",
+      "listed": true
     }
   ]
 }

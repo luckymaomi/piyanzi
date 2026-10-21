@@ -3,3 +3,7 @@ Thumbs.db
 *.tmp
 *.bak
 .cursor/
+_tmp*/
+*_samples.json
+*-迎审*.md
+*-填单*.md
