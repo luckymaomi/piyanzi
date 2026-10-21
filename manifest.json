@@ -3,19 +3,19 @@
   "packPrefix": "piyanzi",
   "files": [
     {
-      "id": "agents",
+      "id": "AGENTS",
       "title": "AGENTS",
       "path": "AGENTS.md",
       "listed": false
     },
     {
-      "id": "checklist",
+      "id": "jianchadan-shouce-bidui-tianxie",
       "title": "检查单手册比对填写",
       "path": "jianchadan-shouce-bidui-tianxie.md",
       "listed": true
     },
     {
-      "id": "flow",
+      "id": "fujiashi-liuzhuan-gengxin",
       "title": "副驾驶流转更新",
       "path": "fujiashi-liuzhuan-gengxin.md",
       "listed": true
