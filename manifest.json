@@ -11,13 +11,19 @@
     {
       "id": "jianchadan-shouce-bidui-tianxie",
       "title": "检查单手册比对填写",
-      "path": "jianchadan-shouce-bidui-tianxie.md",
+      "path": "core/jianchadan-shouce-bidui-tianxie.md",
       "listed": true
     },
     {
       "id": "fujiashi-liuzhuan-gengxin",
       "title": "副驾驶流转更新",
-      "path": "fujiashi-liuzhuan-gengxin.md",
+      "path": "core/fujiashi-liuzhuan-gengxin.md",
+      "listed": true
+    },
+    {
+      "id": "peixun-wancheng-cutongji",
+      "title": "培训完成粗统计",
+      "path": "core/peixun-wancheng-cutongji.md",
       "listed": true
     }
   ]

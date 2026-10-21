@@ -30,8 +30,9 @@
 
 | Skill | 文件 |
 | --- | --- |
-| 检查单手册比对填写 | `jianchadan-shouce-bidui-tianxie.md` |
-| 副驾驶流转更新 | `fujiashi-liuzhuan-gengxin.md` |
+| 检查单手册比对填写 | `core/jianchadan-shouce-bidui-tianxie.md` |
+| 副驾驶流转更新 | `core/fujiashi-liuzhuan-gengxin.md` |
+| 培训完成粗统计 | `core/peixun-wancheng-cutongji.md` |
 
 ## 对主人说话
 
