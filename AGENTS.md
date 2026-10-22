@@ -33,9 +33,10 @@
 1. 检查单手册比对填写
 2. 副驾驶流转更新
 3. 培训完成粗统计
-4. 资质代码
-5. 特殊机场资格代码
-6. 资质录入检查预提示
+4. 飞行部培训规则速查
+5. 资质代码
+6. 特殊机场资格代码
+7. 资质录入检查预提示
 主人点名启动哪一套。
 ```
 
@@ -46,6 +47,7 @@
 | 检查单手册比对填写 | `core/jianchadan-shouce-bidui-tianxie.md` |
 | 副驾驶流转更新 | `core/fujiashi-liuzhuan-gengxin.md` |
 | 培训完成粗统计 | `core/peixun-wancheng-cutongji.md` |
+| 飞行部培训规则速查 | `core/peixun-guize-sucha.md` |
 | 资质代码 | `core/zizhi-daima.md` |
 | 特殊机场资格代码 | `core/teshu-jichang-zige-daima.md` |
 | 资质录入检查预提示 | `core/zizhi-luru-jiancha-yutishi.md` |

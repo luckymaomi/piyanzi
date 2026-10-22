@@ -27,6 +27,12 @@
       "listed": true
     },
     {
+      "id": "peixun-guize-sucha",
+      "title": "飞行部培训规则速查",
+      "path": "core/peixun-guize-sucha.md",
+      "listed": true
+    },
+    {
       "id": "zizhi-daima",
       "title": "资质代码",
       "path": "core/zizhi-daima.md",
