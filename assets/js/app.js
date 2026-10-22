@@ -79,6 +79,19 @@ function downloadName(file) {
   return /\.md$/i.test(title) ? title : `${title}.md`;
 }
 
+function remoteSkillUrl(file) {
+  const base = String(manifest?.remoteSkillBase || "").replace(/\/?$/, "/");
+  const path = String(file.path || "").replace(/^\.\//, "");
+  return `${base}${path}`;
+}
+
+/** 给 Agent 联网拉取 Skill 用的一句话（可复制） */
+function agentFetchPrompt(file) {
+  const url = remoteSkillUrl(file);
+  const title = file.title || file.id || "Skill";
+  return `请阅读 ${url}（皮燕子 Skill：${title}），按该文件执行；确认已读后仅回复 OK。`;
+}
+
 function triggerDownload(filename, text) {
   const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -87,6 +100,22 @@ function triggerDownload(filename, text) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const area = document.createElement("textarea");
+  area.value = text;
+  area.setAttribute("readonly", "");
+  area.style.position = "fixed";
+  area.style.left = "-9999px";
+  document.body.appendChild(area);
+  area.select();
+  document.execCommand("copy");
+  area.remove();
 }
 
 function closeMobileMenu() {
@@ -207,6 +236,44 @@ function renderToolbar(file) {
   const toolbar = document.createElement("div");
   toolbar.className = "memo-toolbar";
 
+  const prompt = agentFetchPrompt(file);
+
+  const promptWrap = document.createElement("div");
+  promptWrap.className = "memo-agent-prompt";
+
+  const promptInput = document.createElement("input");
+  promptInput.type = "text";
+  promptInput.className = "memo-agent-prompt-input";
+  promptInput.readOnly = true;
+  promptInput.value = prompt;
+  promptInput.title = "联网拉取 Skill 的一句话指令";
+  promptInput.addEventListener("focus", () => promptInput.select());
+  promptInput.addEventListener("click", () => promptInput.select());
+
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "memo-download-button";
+  copyBtn.textContent = "复制";
+  copyBtn.title = "复制后粘贴给 Agent，无需下载 Skill 文件";
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await copyText(prompt);
+      const prev = copyBtn.textContent;
+      copyBtn.textContent = "已复制";
+      window.setTimeout(() => {
+        copyBtn.textContent = prev;
+      }, 1200);
+    } catch (err) {
+      console.error(err);
+      copyBtn.textContent = "复制失败";
+      window.setTimeout(() => {
+        copyBtn.textContent = "复制";
+      }, 1200);
+    }
+  });
+
+  promptWrap.append(promptInput, copyBtn);
+
   const downloadBtn = document.createElement("button");
   downloadBtn.type = "button";
   downloadBtn.className = "memo-download-button";
@@ -215,7 +282,7 @@ function renderToolbar(file) {
     triggerDownload(downloadName(file), activeMarkdown);
   });
 
-  toolbar.append(downloadBtn);
+  toolbar.append(promptWrap, downloadBtn);
   return toolbar;
 }
 

@@ -12,7 +12,7 @@
 </p>
 </div>
 
-皮燕子是 Cursor / Agent 用的业务 Skill 合集：页面可浏览、搜索、下载单篇 Markdown，也可一键下载合集（全部 Skill 合并为一个 `.md`，非 zip）。唤醒词与对主人话术见 `AGENTS.md`。
+皮燕子是 Cursor / Agent 用的业务 Skill 合集：页面可浏览、搜索、下载单篇 Markdown，也可一键下载合集（全部 Skill 合并为一个 `.md`，非 zip）。打开任一 Skill 时，页顶可「复制」一句话指令，粘贴给 Agent 按远端 raw 链接拉取该 Skill（无需先下载文件）。唤醒词与对主人话术见 `AGENTS.md`。
 
 ## 当前 Skill
 

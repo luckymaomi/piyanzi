@@ -186,6 +186,33 @@
     margin: 0 0 18px;
 }
 
+.memo-agent-prompt {
+    display: flex;
+    flex: 1 1 280px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-width: min(100%, 280px);
+}
+
+.memo-agent-prompt-input {
+    flex: 1 1 220px;
+    min-width: 0;
+    min-height: 36px;
+    padding: 6px 10px;
+    border: 2px solid var(--soft-border);
+    background: var(--soft-surface);
+    box-shadow: var(--hard-shadow-small);
+    color: var(--soft-ink);
+    font-family: "Cascadia Mono", Consolas, "Microsoft YaHei UI", monospace;
+    font-size: 11px;
+}
+
+.memo-agent-prompt-input:focus {
+    outline: 2px solid var(--soft-focus);
+    outline-offset: 2px;
+}
+
 .memo-download-button {
     min-height: 36px;
     padding: 6px 12px;
