@@ -10,6 +10,12 @@
       "listed": false
     },
     {
+      "id": "wo-shi-shui",
+      "title": "我是谁",
+      "path": "core/wo-shi-shui.md",
+      "listed": true
+    },
+    {
       "id": "jianchadan-shouce-bidui-tianxie",
       "title": "检查单手册比对填写",
       "path": "core/jianchadan-shouce-bidui-tianxie.md",
