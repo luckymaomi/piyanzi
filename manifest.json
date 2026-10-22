@@ -10,10 +10,11 @@
       "listed": false
     },
     {
-      "id": "wo-shi-shui",
-      "title": "我是谁",
-      "path": "core/wo-shi-shui.md",
-      "listed": true
+      "id": "fenshen",
+      "title": "分身",
+      "path": "core/fenshen.md",
+      "listed": true,
+      "agentFetch": "pack"
     },
     {
       "id": "jianchadan-shouce-bidui-tianxie",

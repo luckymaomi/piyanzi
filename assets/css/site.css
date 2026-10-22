@@ -213,6 +213,15 @@
     outline-offset: 2px;
 }
 
+.memo-agent-prompt-pack {
+    min-height: 120px;
+    max-height: 280px;
+    resize: vertical;
+    line-height: 1.45;
+    white-space: pre;
+    overflow: auto;
+}
+
 .memo-download-button {
     min-height: 36px;
     padding: 6px 12px;
