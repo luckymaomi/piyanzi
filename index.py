@@ -72,6 +72,13 @@ def main() -> int:
         if not index_file.exists():
             print("[piyanzi] index.html not found.", file=sys.stderr)
             return 1
+        ammo = subprocess.run(
+            [sys.executable, str(project_root / "test_fenshen_ammo_links.py")],
+            cwd=str(project_root),
+        )
+        if ammo.returncode != 0:
+            print("[piyanzi] fenshen ammo links check failed.", file=sys.stderr)
+            return ammo.returncode
         print("[piyanzi] start.index.py check passed.")
         return 0
 

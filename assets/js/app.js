@@ -94,29 +94,11 @@ function agentFetchSinglePrompt(file) {
 
 /**
  * 合集装载（「分身」等 agentFetch=pack）：
- * 报菜名：AGENTS + 全部 listed Skill 各给一条 raw；清单随 manifest 自动增减。
+ * 只甩分身一篇；全量 Skill raw 写在分身文首「弹药链接」，加 Skill 改那一块即可。
  */
 function agentFetchPackPrompt(anchorFile) {
-  const agents =
-    allFiles().find((f) => f.id === "AGENTS" || f.path === "AGENTS.md") || {
-      path: "AGENTS.md",
-      title: "AGENTS",
-    };
-  const skills = listedFiles();
-  const lines = [];
-  let n = 1;
-  lines.push(`${n}. ${remoteSkillUrl(agents)}（AGENTS 规约）`);
-  n += 1;
-  for (const f of skills) {
-    const title = f.title || f.id || "Skill";
-    lines.push(`${n}. ${remoteSkillUrl(f)}（${title}）`);
-    n += 1;
-  }
-  const startName = anchorFile?.title || "分身";
-  return (
-    `主人，皮燕子已启动，技能已加载。请依次阅读并装备下列弹药（先 AGENTS，再分身，其余一并上膛），然后启动「${startName}」。\n` +
-    lines.join("\n")
-  );
+  const url = remoteSkillUrl(anchorFile);
+  return `请阅读 ${url}，并加载分身。`;
 }
 
 /** 给 Agent 联网拉取用的可复制指令（单篇或合集，由 manifest.agentFetch 决定） */
@@ -277,20 +259,13 @@ function renderToolbar(file) {
   const promptWrap = document.createElement("div");
   promptWrap.className = "memo-agent-prompt";
 
-  let promptField;
-  if (isPack) {
-    promptField = document.createElement("textarea");
-    promptField.className = "memo-agent-prompt-input memo-agent-prompt-pack";
-    promptField.rows = Math.min(14, prompt.split("\n").length + 1);
-  } else {
-    promptField = document.createElement("input");
-    promptField.type = "text";
-    promptField.className = "memo-agent-prompt-input";
-  }
+  const promptField = document.createElement("input");
+  promptField.type = "text";
+  promptField.className = "memo-agent-prompt-input";
   promptField.readOnly = true;
   promptField.value = prompt;
   promptField.title = isPack
-    ? "分身合集：报菜名列出 AGENTS + 全部 listed Skill（随 manifest 自动增减）"
+    ? "只指向分身一篇；文内「弹药链接」含全部 Skill raw"
     : "联网拉取 Skill 的一句话指令";
   promptField.addEventListener("focus", () => promptField.select());
   promptField.addEventListener("click", () => promptField.select());
@@ -300,7 +275,7 @@ function renderToolbar(file) {
   copyBtn.className = "memo-download-button";
   copyBtn.textContent = "复制";
   copyBtn.title = isPack
-    ? "复制后粘贴给 Agent：皮燕子已启动，技能报菜名上膛"
+    ? "复制后粘贴给 Agent：读分身并按文首链接装载全部 Skill"
     : "复制后粘贴给 Agent，无需下载 Skill 文件";
   copyBtn.addEventListener("click", async () => {
     try {

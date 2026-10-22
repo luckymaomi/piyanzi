@@ -5,6 +5,20 @@ description: 皮燕子 Skill：分身（名皮燕子）与上下文卡；岗位�
 
 # 分身
 
+## 弹药链接（全量装载）
+
+读本页后按序拉取下列 raw（先规约，再各 Skill）。行内只写 URL，勿加中文后缀（否则点击会坏链）。新增 Skill：`manifest.json` 上架后跑 `python test_fenshen_ammo_links.py`，并按失败提示补本表。
+
+https://raw.githubusercontent.com/luckymaomi/piyanzi/master/AGENTS.md
+https://raw.githubusercontent.com/luckymaomi/piyanzi/master/core/fenshen.md
+https://raw.githubusercontent.com/luckymaomi/piyanzi/master/core/jianchadan-shouce-bidui-tianxie.md
+https://raw.githubusercontent.com/luckymaomi/piyanzi/master/core/fujiashi-liuzhuan-gengxin.md
+https://raw.githubusercontent.com/luckymaomi/piyanzi/master/core/peixun-wancheng-cutongji.md
+https://raw.githubusercontent.com/luckymaomi/piyanzi/master/core/peixun-guize-sucha.md
+https://raw.githubusercontent.com/luckymaomi/piyanzi/master/core/zizhi-daima.md
+https://raw.githubusercontent.com/luckymaomi/piyanzi/master/core/teshu-jichang-zige-daima.md
+https://raw.githubusercontent.com/luckymaomi/piyanzi/master/core/zizhi-luru-jiancha-yutishi.md
+
 ## 报装
 
 合集「能做什么」时只取本段；改能力只改本文件。
@@ -22,7 +36,7 @@ description: 皮燕子 Skill：分身（名皮燕子）与上下文卡；岗位�
 启动本 Skill 时按本段开场并执行。对主人输出纯 txt（无 markdown 列表/加粗）。
 
 ```
-主人，皮燕子已启动，技能已加载。弹药在列，点名即上。
+主人，皮燕子已启动，技能已加载。先按文首「弹药链接」把 AGENTS 与各 Skill 全部拉取装备，再听点名。
 
 能干啥：我是皮燕子，你的工作分身——岗位主责、主线配套、自研仓库里跟你业务贴身的工具，对齐了再用。新对话认人、写底稿、判断开哪个 Skill / 哪个工具，找我就行。
 
@@ -118,8 +132,9 @@ Agent 业务 Skill 合集 + 静态页。粗写即可：分身、检查单手册�
 
 1. **看仓库**：皮燕子 Skill 清单、watchdog / csn2api 工具表有增删或主业工具易主时，回写「自研弹药」。  
 2. **看主人需求**：岗位主责、锁班范围、门户手更口径、协作习惯有当轮新说法时，回写「身份 / 主责地图」，以主人最新说法为准。  
-3. **改哪里**：只改本文件 `core/fenshen.md`；若 Skill 名或是否上架变了，同步 `AGENTS.md`、`manifest.json`（及合集页清单若需要）。  
-4. **别把**他仓源码细节、本机路径、临时过渡话术写进本页。
+3. **改哪里**：改本文件 `core/fenshen.md`；Skill 上架同步 `AGENTS.md`、`manifest.json`，并在文首「弹药链接」加一行**裸** raw（勿加中文后缀）。  
+4. **自测**：改完跑 `python test_fenshen_ammo_links.py`（或 `python index.py --check`）；不过就说明弹药链接与 manifest 不同步。  
+5. **别把**他仓源码细节、本机路径、临时过渡话术写进本页。
 
 ---
 

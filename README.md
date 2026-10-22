@@ -12,7 +12,7 @@
 </p>
 </div>
 
-皮燕子是 Cursor / Agent 用的业务 Skill 合集：页面可浏览、搜索、下载单篇 Markdown，也可一键下载合集（全部 Skill 合并为一个 `.md`，非 zip）。打开任一 Skill 时，页顶可「复制」指令粘贴给 Agent 按远端 raw 拉取（无需先下载）。普通 Skill 复制单篇；「分身」等 `agentFetch: pack` 报菜名列出 AGENTS + 全部 listed Skill（随 manifest 自动增减），开场「皮燕子已启动，技能已加载」。唤醒与启动顺序见 `AGENTS.md`。
+皮燕子是 Cursor / Agent 用的业务 Skill 合集：页面可浏览、搜索、下载单篇 Markdown，也可一键下载合集（全部 Skill 合并为一个 `.md`，非 zip）。打开任一 Skill 时，页顶可「复制」指令粘贴给 Agent 按远端 raw 拉取（无需先下载）。普通 Skill 复制「请阅读 …，然后启动本 Skill」；「分身」复制「请阅读 〔分身 raw〕，并加载分身」——全量 Skill 链接写在分身文首「弹药链接」，加 Skill 改那一块即可。唤醒与启动顺序见 `AGENTS.md`。
 
 ## 当前 Skill
 
@@ -38,6 +38,14 @@ python index.py
 ```
 
 默认打开 `http://localhost:4570/index.html`。常用参数：`--port`、`--no-open`、`--check`。
+
+分身文首「弹药链接」须与 `manifest.json` 同步（裸 URL、无中文后缀）。更新 Skill 后跑：
+
+```powershell
+python test_fenshen_ammo_links.py
+```
+
+`python index.py --check` 会连带跑上述校验。
 
 ## 开源协议与贡献
 
