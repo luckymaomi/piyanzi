@@ -1,8 +1,8 @@
 # 项目: piyanzi
-# 定位: 皮燕子 Skill 静态站（浏览 / 搜索 / 打包下载）
+# 定位: 皮燕子 Skill 静态站（浏览 / 搜索 / 合集单文件下载）
 # 页面: 原生 HTML + CSS + JavaScript
 # 渲染: marked + DOMPurify
-# 打包: JSZip
+# 合集: 多篇 Markdown 合并为一个 .md
 # 版本控制: Git + GitHub Pages
 
 from __future__ import annotations

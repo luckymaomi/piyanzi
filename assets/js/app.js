@@ -326,31 +326,27 @@ async function packDownload() {
   els.pack.setAttribute("aria-busy", "true");
 
   try {
-    const zip = new JSZip();
-    const folder = zip.folder(manifest.packPrefix || "piyanzi");
-    const used = new Set();
+    const stamp = new Date().toISOString().slice(0, 10);
+    const brand = manifest.name || "皮燕子";
+    const parts = [
+      `# ${brand}合集`,
+      "",
+      `生成日期：${stamp}`,
+      `收录文件：${allFiles().length} 篇`,
+      "",
+    ];
 
     for (const file of allFiles()) {
-      let name = downloadName(file);
-      if (used.has(name)) name = `${file.id}-${name}`;
-      used.add(name);
-      folder.file(name, await loadRaw(file.path));
+      const title = file.title || file.id || file.path;
+      const body = String(await loadRaw(file.path)).replace(/\s+$/, "");
+      parts.push(`===== ${title}（${file.path}） =====`, "", body, "", "");
     }
 
-    folder.file("manifest.json", `${JSON.stringify(manifest, null, 2)}\n`);
-
-    const stamp = new Date().toISOString().slice(0, 10);
-    const blob = await zip.generateAsync({ type: "blob" });
-    const name = `${manifest.packPrefix || "piyanzi"}-${stamp}.zip`;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-    a.click();
-    URL.revokeObjectURL(url);
+    const filename = `${manifest.packPrefix || "piyanzi"}-合集-${stamp}.md`;
+    triggerDownload(filename, `${parts.join("\n").replace(/\s+$/, "")}\n`);
   } catch (err) {
     console.error(err);
-    els.searchStatus.textContent = "打包失败";
+    els.searchStatus.textContent = "合集下载失败";
   } finally {
     els.pack.disabled = false;
     els.pack.removeAttribute("aria-busy");
