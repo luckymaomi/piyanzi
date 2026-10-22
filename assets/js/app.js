@@ -89,7 +89,7 @@ function remoteSkillUrl(file) {
 function agentFetchPrompt(file) {
   const url = remoteSkillUrl(file);
   const title = file.title || file.id || "Skill";
-  return `请阅读 ${url}（皮燕子 Skill：${title}），按该文件执行；确认已读后仅回复 OK。`;
+  return `请阅读 ${url}（皮燕子 Skill：${title}），然后启动本 Skill。`;
 }
 
 function triggerDownload(filename, text) {
