@@ -12,22 +12,13 @@
 </p>
 </div>
 
-皮燕子是 Cursor / Agent 用的业务 Skill 合集：页面可浏览、搜索、下载单篇 Markdown，也可一键下载合集（全部 Skill 合并为一个 `.md`，非 zip）。打开任一 Skill 时，页顶可「复制」指令粘贴给 Agent 按远端 raw 拉取（无需先下载）。普通 Skill 复制「请阅读 …，然后启动本 Skill」；「分身」复制「请阅读 〔分身 raw〕，并加载分身」——全量 Skill 链接写在分身文首「弹药链接」，加 Skill 改那一块即可。唤醒与启动顺序见 `AGENTS.md`。
+皮燕子是业务 Skill 合集：网页可浏览、搜索、复制单篇启动指令、下载 Markdown，也可下载全部文件的单文件合集。
 
-## 当前 Skill
+职责分离：`AGENTS.md` 管公共纪律，`manifest.json` 是技能目录的唯一来源，`core/fenshen.md` 只管身份与岗位背景，各业务篇维护各自流程。技能按需读取，分身独立启动，不加载其他技能。网页的复制指令只指向当前篇；联网地址统一由清单的 `remoteSkillBase` 与 `path` 生成。
 
-状态：✅ 已启用 · 🧪 Beta 测试 · 🧊 已弃用
+## 技能目录
 
-| Skill | 状态 | 功能 |
-| --- | --- | --- |
-| 分身 | ✅ | 工作分身（名皮燕子）：主责主线、本仓 Skill，以及 watchdog / csn2api 贴身工具 |
-| 检查单手册比对填写 | ✅ | 迎审检查单「符合性声明」按手册原文落笔；条款对上就填、对不上留空；可按条款抽 PDF 佐证 |
-| 副驾驶流转更新 | ✅ | 货航 777 副驾驶积分总表：名单、等级/报务、考核、预警、总分、可流转 |
-| 培训完成粗统计 | ✅ | 年度培训表粗统计：截止日各训人数、单训按月/按期、报告人话表述与套话回填 |
-| 飞行部培训规则速查 | ✅ | 八项培训有效期/窗口/续期业务规则：对照表、填表口径、固定口算样例 |
-| 资质代码 | ✅ | 资格代码死规矩查表：代码↔中文、类型、机型/岗位/技术等级要求、有效期 |
-| 特殊机场资格代码 | ✅ | 特殊机场死规矩查表：机场名↔排班代码、高原/特殊/公司关注分类 |
-| 资质录入检查预提示 | ✅ | 录入通知拆成检查清单：报务/单飞/机场映射、录入铁律、例外与疑点 |
+当前名称与入口直接读取 [manifest.json](./manifest.json)，浏览页自动生成导航。新增技能只需写 `core/技能名.md`（含 name、description、报装、综述）并加入清单，无需改分身、规约或本页的目录副本。
 
 ## 本地预览
 
@@ -39,19 +30,27 @@ python index.py
 
 默认打开 `http://localhost:4570/index.html`。常用参数：`--port`、`--no-open`、`--check`。
 
-分身文首「弹药链接」须与 `manifest.json` 同步（裸 URL、无中文后缀）。更新 Skill 后跑：
+网页运行所需的 Bootstrap、marked 15.0.11 与 DOMPurify 3.2.6 均随 `assets/vendor/` 提供，本地浏览无需CDN；第三方许可与资源一同保留。
+
+静态站仅需 Python 3.10+，不需要安装依赖。Excel 工具另执行：
 
 ```powershell
-python test_fenshen_ammo_links.py
+python -m pip install -r requirements.txt
 ```
 
-`python index.py --check` 会连带跑上述校验。
+`python index.py --check` 只检查网页入口、清单和技能文件是否存在。本项目保持轻量，不额外维护测试框架或CI。
+
+## 工作文件与依赖
+
+必要辅助脚本统一放在 `scripts/`，目前为进度查询与回填脚本 `scripts/update_progress.py`；网页启动入口 `index.py` 留在根目录。最终业务产物保留在根目录，Excel和本轮记录等不入库。
+
+填表脚本仅作辅助。使用前先调研本轮真实表格结构，字段映射、名单与目标格以实表和主人确认的口径为准，不直接套用历史样例。
 
 ## 开源协议与贡献
 
 本项目遵循 [MIT License](./LICENSE) 开源协议。
 
-欢迎提交 Issue 或 Pull Request 改进 Skill、修复问题、补充文档。贡献时尽量说明问题场景、输入样例、期望结果和验证方式；改能力请改 `core/` 下对应 Skill 文件的报装 / 综述 / 细则，页面清单改 `manifest.json`，入口索引改 `AGENTS.md`。
+欢迎提交 Issue 或 Pull Request 改进 Skill、修复问题、补充文档。贡献时尽量说明问题场景、输入样例、期望结果和验证方式；改能力请改 `core/` 下对应 Skill 文件的报装 / 综述 / 细则，技能目录只改 `manifest.json`，公共纪律改 `AGENTS.md`，岗位身份只改 `core/fenshen.md`。
 
 ## 目前
 

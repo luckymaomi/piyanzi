@@ -12,7 +12,6 @@ const els = {
 
 let manifest = null;
 let activeId = null;
-let activeMarkdown = "";
 let renderVersion = 0;
 let searchVersion = 0;
 let searchTimer;
@@ -86,27 +85,10 @@ function remoteSkillUrl(file) {
 }
 
 /** 单篇：给 Agent 联网拉取该 Skill */
-function agentFetchSinglePrompt(file) {
+function agentFetchPrompt(file) {
   const url = remoteSkillUrl(file);
   const title = file.title || file.id || "Skill";
   return `请阅读 ${url}（皮燕子 Skill：${title}），然后启动本 Skill。`;
-}
-
-/**
- * 合集装载（「分身」等 agentFetch=pack）：
- * 只甩分身一篇；全量 Skill raw 写在分身文首「弹药链接」，加 Skill 改那一块即可。
- */
-function agentFetchPackPrompt(anchorFile) {
-  const url = remoteSkillUrl(anchorFile);
-  return `请阅读 ${url}，并加载分身。`;
-}
-
-/** 给 Agent 联网拉取用的可复制指令（单篇或合集，由 manifest.agentFetch 决定） */
-function agentFetchPrompt(file) {
-  if (file?.agentFetch === "pack") {
-    return agentFetchPackPrompt(file);
-  }
-  return agentFetchSinglePrompt(file);
 }
 
 function triggerDownload(filename, text) {
@@ -140,6 +122,11 @@ function closeMobileMenu() {
   const collapse = window.bootstrap?.Collapse?.getOrCreateInstance(els.sidebarMenu, {
     toggle: false,
   });
+  // Bootstrap 在展开动画中忽略 hide；选择较快时等展开完成再收起。
+  if (els.sidebarMenu.classList.contains("collapsing")) {
+    els.sidebarMenu.addEventListener("shown.bs.collapse", () => collapse?.hide(), { once: true });
+    return;
+  }
   collapse?.hide();
 }
 
@@ -249,12 +236,11 @@ function highlightContent(query) {
   els.content.querySelector(".search-highlight")?.scrollIntoView({ block: "center" });
 }
 
-function renderToolbar(file) {
+function renderToolbar(file, markdown) {
   const toolbar = document.createElement("div");
   toolbar.className = "memo-toolbar";
 
   const prompt = agentFetchPrompt(file);
-  const isPack = file?.agentFetch === "pack";
 
   const promptWrap = document.createElement("div");
   promptWrap.className = "memo-agent-prompt";
@@ -264,9 +250,7 @@ function renderToolbar(file) {
   promptField.className = "memo-agent-prompt-input";
   promptField.readOnly = true;
   promptField.value = prompt;
-  promptField.title = isPack
-    ? "只指向分身一篇；文内「弹药链接」含全部 Skill raw"
-    : "联网拉取 Skill 的一句话指令";
+  promptField.title = "联网拉取本篇 Skill 的一句话指令";
   promptField.addEventListener("focus", () => promptField.select());
   promptField.addEventListener("click", () => promptField.select());
 
@@ -274,9 +258,7 @@ function renderToolbar(file) {
   copyBtn.type = "button";
   copyBtn.className = "memo-download-button";
   copyBtn.textContent = "复制";
-  copyBtn.title = isPack
-    ? "复制后粘贴给 Agent：读分身并按文首链接装载全部 Skill"
-    : "复制后粘贴给 Agent，无需下载 Skill 文件";
+  copyBtn.title = "复制后粘贴给 Agent，独立启动本篇 Skill";
   copyBtn.addEventListener("click", async () => {
     try {
       await copyText(prompt);
@@ -301,7 +283,7 @@ function renderToolbar(file) {
   downloadBtn.className = "memo-download-button";
   downloadBtn.textContent = "下载 Markdown";
   downloadBtn.addEventListener("click", () => {
-    triggerDownload(downloadName(file), activeMarkdown);
+    triggerDownload(downloadName(file), markdown);
   });
 
   toolbar.append(promptWrap, downloadBtn);
@@ -309,36 +291,34 @@ function renderToolbar(file) {
 }
 
 async function openFile(id, searchValue = els.search.value) {
+  const version = ++renderVersion;
   const file = listedFiles().find((f) => f.id === id);
   if (!file) {
-    activeMarkdown = "";
     els.content.textContent = "没有文件。";
     return;
   }
 
-  const version = ++renderVersion;
   activeId = id;
   document.title = `${file.title} - 皮燕子`;
   markActive(id);
   els.content.textContent = "正在加载...";
 
   try {
-    activeMarkdown = await loadRaw(file.path);
+    const markdown = await loadRaw(file.path);
     if (version !== renderVersion) return;
     const body = document.createElement("div");
     body.className = "memo-body";
-    const html = marked.parse(stripFrontMatter(activeMarkdown), {
+    const html = marked.parse(stripFrontMatter(markdown), {
       gfm: true,
       breaks: false,
     });
     body.innerHTML = DOMPurify.sanitize(html);
-    els.content.replaceChildren(renderToolbar(file), body);
+    els.content.replaceChildren(renderToolbar(file, markdown), body);
     wrapTables(els.content);
     highlightContent(searchValue);
     history.replaceState(null, "", `#${encodeURIComponent(file.id)}`);
   } catch (err) {
     if (version !== renderVersion) return;
-    activeMarkdown = "";
     els.content.textContent = err instanceof Error ? err.message : String(err);
   }
 }
@@ -356,13 +336,16 @@ function selectFile(id) {
 async function runSearch(value, version) {
   const query = normalizeQuery(value);
   const pool = listedFiles();
-  const sources = await Promise.all(
+  const settled = await Promise.allSettled(
     pool.map(async (file) => ({
       file,
       markdown: await loadRaw(file.path),
     }))
   );
   if (version !== searchVersion) return;
+  const sources = settled.filter((r) => r.status === "fulfilled").map((r) => r.value);
+  const failed = settled.length - sources.length;
+  const failureNote = failed ? `；${failed} 篇加载失败，可重新输入重试` : "";
 
   const results = [];
   for (const { file, markdown } of sources) {
@@ -375,16 +358,16 @@ async function runSearch(value, version) {
   if (!results.length) {
     const empty = document.createElement("div");
     empty.className = "search-empty";
-    empty.textContent = "没有命中";
+    empty.textContent = sources.length ? "没有命中" : "技能加载失败，请重试";
     els.nav.appendChild(empty);
-    els.searchStatus.textContent = "没有命中";
+    els.searchStatus.textContent = `${sources.length ? "没有命中" : "搜索未完成"}${failureNote}`;
     return;
   }
 
   for (const result of results) {
     els.nav.appendChild(createNavLink(result.file, result.snippet));
   }
-  els.searchStatus.textContent = `${results.length} 个命中`;
+  els.searchStatus.textContent = `${results.length} 个命中${failureNote}`;
 
   const current = results.find((r) => r.file.id === activeId) || results[0];
   await openFile(current.file.id, value);
@@ -405,7 +388,11 @@ function handleSearchInput() {
 
   els.searchStatus.textContent = "搜索中…";
   searchTimer = window.setTimeout(() => {
-    void runSearch(value, version);
+    void runSearch(value, version).catch((err) => {
+      if (version !== searchVersion) return;
+      console.error(err);
+      els.searchStatus.textContent = "搜索失败，请重新输入重试";
+    });
   }, 180);
 }
 
@@ -415,7 +402,7 @@ async function packDownload() {
   els.pack.setAttribute("aria-busy", "true");
 
   try {
-    const stamp = new Date().toISOString().slice(0, 10);
+    const stamp = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Shanghai" }).format(new Date());
     const brand = manifest.name || "皮燕子";
     const parts = [
       `# ${brand}合集`,

@@ -13,8 +13,7 @@
       "id": "fenshen",
       "title": "分身",
       "path": "core/fenshen.md",
-      "listed": true,
-      "agentFetch": "pack"
+      "listed": true
     },
     {
       "id": "jianchadan-shouce-bidui-tianxie",
@@ -56,6 +55,12 @@
       "id": "zizhi-luru-jiancha-yutishi",
       "title": "资质录入检查预提示",
       "path": "core/zizhi-luru-jiancha-yutishi.md",
+      "listed": true
+    },
+    {
+      "id": "yierjian-fujiashi-jindu-gengxin",
+      "title": "一二检和副驾驶进度更新",
+      "path": "core/yierjian-fujiashi-jindu-gengxin.md",
       "listed": true
     }
   ]

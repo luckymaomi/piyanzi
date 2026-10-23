@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import http.server
+import json
 import os
 import socketserver
 import subprocess
@@ -72,14 +73,15 @@ def main() -> int:
         if not index_file.exists():
             print("[piyanzi] index.html not found.", file=sys.stderr)
             return 1
-        ammo = subprocess.run(
-            [sys.executable, str(project_root / "test_fenshen_ammo_links.py")],
-            cwd=str(project_root),
-        )
-        if ammo.returncode != 0:
-            print("[piyanzi] fenshen ammo links check failed.", file=sys.stderr)
-            return ammo.returncode
-        print("[piyanzi] start.index.py check passed.")
+        try:
+            manifest = json.loads((project_root / "manifest.json").read_text(encoding="utf-8"))
+            for entry in manifest["files"]:
+                if not (project_root / entry["path"]).is_file():
+                    raise ValueError(f"Missing file: {entry['path']}")
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            print(f"[piyanzi] {error}", file=sys.stderr)
+            return 1
+        print("[piyanzi] index and skill files exist.")
         return 0
 
     if not index_file.exists():
