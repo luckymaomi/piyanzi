@@ -29,6 +29,7 @@ import openpyxl
 from openpyxl.utils.datetime import from_excel
 
 ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_QUERY_TEMPLATE = ROOT / "templates" / "飞行经历查询（皇帝版）-模板.xlsx"
 NS = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 SPECS = [("副驾驶进度", "进入时间", "飞行经历"),
@@ -381,7 +382,11 @@ def main():
     subs = parser.add_subparsers(dest="command", required=True)
     p = subs.add_parser("prepare", help="生成查询模板和本轮记录")
     p.add_argument("--source", required=True)
-    p.add_argument("--template", required=True)
+    p.add_argument(
+        "--template",
+        default=str(DEFAULT_QUERY_TEMPLATE),
+        help=f"空查询模板；默认仓内 {DEFAULT_QUERY_TEMPLATE.relative_to(ROOT).as_posix()}",
+    )
     p.add_argument("--end", help="上海日期 YYYY-MM-DD；Agent 调用应明确传入")
     p.add_argument("--captain-scope", choices=("first-block", "all"), default="first-block")
     p.add_argument("--output", required=True)

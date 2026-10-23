@@ -40,6 +40,12 @@
       "listed": true
     },
     {
+      "id": "peixun-qian-guize",
+      "title": "培训潜规则",
+      "path": "core/peixun-qian-guize.md",
+      "listed": true
+    },
+    {
       "id": "zizhi-daima",
       "title": "资质代码",
       "path": "core/zizhi-daima.md",
