@@ -62,6 +62,18 @@
       "title": "一二检和副驾驶进度更新",
       "path": "core/yierjian-fujiashi-jindu-gengxin.md",
       "listed": true
+    },
+    {
+      "id": "yuedu-feixing-jishu-guanli-shouce",
+      "title": "飞行技术管理手册阅读",
+      "path": "core/yuedu-feixing-jishu-guanli-shouce.md",
+      "listed": true
+    },
+    {
+      "id": "yuedu-feixing-renyuan-xunlian-dagang",
+      "title": "飞行人员训练大纲阅读",
+      "path": "core/yuedu-feixing-renyuan-xunlian-dagang.md",
+      "listed": true
     }
   ]
 }
