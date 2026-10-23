@@ -403,6 +403,7 @@ async function packDownload() {
 
   try {
     const stamp = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Shanghai" }).format(new Date());
+    const md = stamp.slice(5); // MM-DD（上海时区）
     const brand = manifest.name || "皮燕子";
     const parts = [
       `# ${brand}合集`,
@@ -418,7 +419,7 @@ async function packDownload() {
       parts.push(`===== ${title}（${file.path}） =====`, "", body, "", "");
     }
 
-    const filename = `${manifest.packPrefix || "piyanzi"}-合集-${stamp}.md`;
+    const filename = `我的皮燕子-${md}.md`;
     triggerDownload(filename, `${parts.join("\n").replace(/\s+$/, "")}\n`);
   } catch (err) {
     console.error(err);
