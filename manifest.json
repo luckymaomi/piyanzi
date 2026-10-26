@@ -7,85 +7,114 @@
       "id": "AGENTS",
       "title": "AGENTS",
       "path": "AGENTS.md",
-      "listed": false
+      "listed": false,
+      "group": "公共纪律"
     },
     {
       "id": "fenshen",
       "title": "分身",
       "path": "core/fenshen.md",
-      "listed": true
+      "listed": true,
+      "group": "身份"
     },
     {
       "id": "jianchadan-shouce-bidui-tianxie",
       "title": "检查单手册比对填写",
       "path": "core/jianchadan-shouce-bidui-tianxie.md",
-      "listed": true
+      "listed": true,
+      "group": "迎审"
     },
     {
       "id": "fujiashi-liuzhuan-gengxin",
       "title": "副驾驶流转更新",
       "path": "core/fujiashi-liuzhuan-gengxin.md",
-      "listed": true
+      "listed": true,
+      "group": "副驾驶与进度"
     },
     {
       "id": "peixun-wancheng-cutongji",
       "title": "培训完成粗统计",
       "path": "core/peixun-wancheng-cutongji.md",
-      "listed": true
+      "listed": true,
+      "group": "培训"
     },
     {
       "id": "peixun-guize-sucha",
       "title": "飞行部培训规则速查",
       "path": "core/peixun-guize-sucha.md",
-      "listed": true
+      "listed": true,
+      "group": "培训"
     },
     {
       "id": "peixun-qian-guize",
       "title": "培训潜规则",
       "path": "core/peixun-qian-guize.md",
-      "listed": true
+      "listed": true,
+      "group": "培训",
+      "resources": [
+        "history/安保与TSA排课口径-确认.md"
+      ]
     },
     {
       "id": "zizhi-daima",
       "title": "资质代码",
       "path": "core/zizhi-daima.md",
-      "listed": true
+      "listed": true,
+      "group": "资质"
     },
     {
       "id": "teshu-jichang-zige-daima",
       "title": "特殊机场资格代码",
       "path": "core/teshu-jichang-zige-daima.md",
-      "listed": true
+      "listed": true,
+      "group": "资质"
     },
     {
       "id": "zizhi-luru-jiancha-yutishi",
       "title": "资质录入检查预提示",
       "path": "core/zizhi-luru-jiancha-yutishi.md",
-      "listed": true
+      "listed": true,
+      "group": "资质",
+      "resources": [
+        "core/zizhi-daima.md",
+        "core/teshu-jichang-zige-daima.md"
+      ]
     },
     {
       "id": "yierjian-fujiashi-jindu-gengxin",
       "title": "一二检和副驾驶进度更新",
       "path": "core/yierjian-fujiashi-jindu-gengxin.md",
-      "listed": true
+      "listed": true,
+      "group": "副驾驶与进度",
+      "resources": [
+        "scripts/update_progress.py",
+        "templates/飞行经历查询（皇帝版）-模板.xlsx",
+        "requirements.txt"
+      ]
     },
     {
       "id": "yuedu-feixing-jishu-guanli-shouce",
       "title": "飞行技术管理手册阅读",
       "path": "core/yuedu-feixing-jishu-guanli-shouce.md",
-      "listed": true
+      "listed": true,
+      "group": "规章阅读"
     },
     {
       "id": "yuedu-feixing-renyuan-xunlian-dagang",
       "title": "飞行人员训练大纲阅读",
       "path": "core/yuedu-feixing-renyuan-xunlian-dagang.md",
-      "listed": true
+      "listed": true,
+      "group": "规章阅读"
     },
     {
       "id": "waiji-daifei-pifu-hebing",
       "title": "外籍带飞批复合并",
       "path": "core/waiji-daifei-pifu-hebing.md",
-      "listed": true
+      "listed": true,
+      "group": "航季批复",
+      "resources": [
+        "templates/外籍带飞批复合并-模板.xlsx"
+      ]
     }
   ]
 }

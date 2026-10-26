@@ -11,12 +11,15 @@ import argparse
 import http.server
 import json
 import os
+import re
 import socketserver
 import subprocess
 import sys
 import webbrowser
 from functools import partial
+from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 
 PORT = 4570
@@ -64,24 +67,82 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+class PageResources(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.paths: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        for key, value in attrs:
+            if value and (key == "src" or (tag == "link" and key == "href")):
+                self.paths.append(value)
+
+
+def check_project(root: Path) -> None:
+    """只检查静态接线，不启动服务，不处理业务文件。"""
+    def require_file(path: str, base: Path = root) -> Path:
+        target = (base / unquote(path)).resolve()
+        if not target.is_relative_to(root) or not target.is_file():
+            raise ValueError(f"Missing or invalid local file: {path}")
+        return target
+
+    manifest = json.loads(require_file("manifest.json").read_text(encoding="utf-8"))
+    entries = manifest.get("files")
+    if not isinstance(entries, list) or not entries:
+        raise ValueError("Manifest files must be a nonempty list.")
+    ids: set[str] = set()
+    paths: set[str] = set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise ValueError("Invalid manifest entry.")
+        for field in ("id", "title", "path", "group"):
+            if not isinstance(entry.get(field), str) or not entry[field].strip():
+                raise ValueError(f"Missing manifest field: {field}")
+        if entry["id"] in ids or entry["path"] in paths:
+            raise ValueError(f"Duplicate entry: {entry['id']}")
+        ids.add(entry["id"])
+        paths.add(entry["path"])
+        require_file(entry["path"])
+        resources = entry.get("resources", [])
+        if not isinstance(resources, list) or any(not isinstance(p, str) or not p.strip() for p in resources):
+            raise ValueError(f"Invalid resources: {entry['id']}")
+        for resource in resources:
+            require_file(resource)
+    if not {"AGENTS", "fenshen"}.issubset(ids):
+        raise ValueError("Missing AGENTS or fenshen entry.")
+    remote = urlsplit(manifest.get("remoteSkillBase", ""))
+    if remote.scheme not in ("http", "https") or not remote.netloc:
+        raise ValueError("Invalid remoteSkillBase.")
+    unregistered = {p.relative_to(root).as_posix() for p in (root / "core").glob("*.md")} - paths
+    if unregistered:
+        raise ValueError(f"Unregistered skills: {sorted(unregistered)}")
+
+    page = PageResources()
+    page.feed(require_file("index.html").read_text(encoding="utf-8"))
+    for path in page.paths:
+        url = urlsplit(path)
+        if not url.scheme and not url.netloc:
+            require_file(url.path)
+    for module in (root / "assets/js").glob("*"):
+        if module.suffix not in (".js", ".mjs"):
+            continue
+        source = module.read_text(encoding="utf-8")
+        for path in re.findall(r'''\bimport\s+(?:[^;]*?\bfrom\s*)?["'](\.[^"']+)["']''', source):
+            require_file(path, module.parent)
+
+
 def main() -> int:
     args = parse_args()
     project_root = Path(__file__).resolve().parent
     index_file = project_root / "index.html"
 
     if args.check:
-        if not index_file.exists():
-            print("[piyanzi] index.html not found.", file=sys.stderr)
-            return 1
         try:
-            manifest = json.loads((project_root / "manifest.json").read_text(encoding="utf-8"))
-            for entry in manifest["files"]:
-                if not (project_root / entry["path"]).is_file():
-                    raise ValueError(f"Missing file: {entry['path']}")
+            check_project(project_root)
         except (OSError, ValueError, KeyError, TypeError) as error:
             print(f"[piyanzi] {error}", file=sys.stderr)
             return 1
-        print("[piyanzi] index and skill files exist.")
+        print("[piyanzi] Manifest, skills, resources and page/module references verified.")
         return 0
 
     if not index_file.exists():

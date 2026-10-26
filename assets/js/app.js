@@ -1,3 +1,6 @@
+import { validateManifest, listedFiles as catalogFiles, resourcePaths } from "./catalog.mjs";
+import { agentFetchPrompt, buildSkillMarkdown, buildPackMarkdown } from "./knowledge-pack.mjs";
+
 const MANIFEST_URL = new URL("../../manifest.json", import.meta.url);
 
 const els = {
@@ -18,73 +21,7 @@ let searchTimer;
 const cache = new Map();
 
 function listedFiles() {
-  return (manifest?.files || []).filter((f) => f.listed !== false);
-}
-
-function allFiles() {
-  return manifest?.files || [];
-}
-
-/** 合集喂 AI 顺序：分身最先，AGENTS 最后；中间按职责域。 */
-const PACK_GROUPS = [
-  {
-    name: "培训",
-    ids: ["peixun-guize-sucha", "peixun-qian-guize", "peixun-wancheng-cutongji"],
-  },
-  {
-    name: "资质",
-    ids: ["zizhi-daima", "teshu-jichang-zige-daima", "zizhi-luru-jiancha-yutishi"],
-  },
-  {
-    name: "副驾驶与进度",
-    ids: ["fujiashi-liuzhuan-gengxin", "yierjian-fujiashi-jindu-gengxin"],
-  },
-  {
-    name: "迎审与规章",
-    ids: [
-      "jianchadan-shouce-bidui-tianxie",
-      "yuedu-feixing-jishu-guanli-shouce",
-      "yuedu-feixing-renyuan-xunlian-dagang",
-    ],
-  },
-];
-
-function sectionMarker(file) {
-  const title = file.title || file.id || file.path;
-  return `===== ${title}（${file.path}） =====`;
-}
-
-function packOrderedEntries() {
-  const files = allFiles();
-  const byId = new Map(files.map((f) => [f.id, f]));
-  const used = new Set();
-  const entries = [];
-
-  const fenshen = byId.get("fenshen");
-  if (fenshen) {
-    entries.push({ file: fenshen, group: "身份" });
-    used.add("fenshen");
-  }
-
-  for (const group of PACK_GROUPS) {
-    for (const id of group.ids) {
-      const file = byId.get(id);
-      if (!file || used.has(id)) continue;
-      entries.push({ file, group: group.name });
-      used.add(id);
-    }
-  }
-
-  for (const file of files) {
-    if (used.has(file.id) || file.id === "AGENTS") continue;
-    entries.push({ file, group: "其他" });
-    used.add(file.id);
-  }
-
-  const agents = byId.get("AGENTS");
-  if (agents) entries.push({ file: agents, group: "纪律" });
-
-  return entries;
+  return manifest ? catalogFiles(manifest) : [];
 }
 
 function stripFrontMatter(raw) {
@@ -138,19 +75,6 @@ function downloadName(file) {
     .replace(/[\\/:*?"<>|]/g, "_")
     .trim() || "file";
   return /\.md$/i.test(title) ? title : `${title}.md`;
-}
-
-function remoteSkillUrl(file) {
-  const base = String(manifest?.remoteSkillBase || "").replace(/\/?$/, "/");
-  const path = String(file.path || "").replace(/^\.\//, "");
-  return `${base}${path}`;
-}
-
-/** 单篇：给 Agent 联网拉取该 Skill */
-function agentFetchPrompt(file) {
-  const url = remoteSkillUrl(file);
-  const title = file.title || file.id || "Skill";
-  return `请阅读 ${url}（皮燕子 Skill：${title}），然后启动本 Skill。`;
 }
 
 function triggerDownload(filename, text) {
@@ -298,11 +222,29 @@ function highlightContent(query) {
   els.content.querySelector(".search-highlight")?.scrollIntoView({ block: "center" });
 }
 
-function renderToolbar(file, markdown) {
+function renderResources(file) {
+  const section = document.createElement("details");
+  const title = document.createElement("summary");
+  title.textContent = "公共规约与配套资源（模板、脚本及参考资料）";
+  const list = document.createElement("ul");
+  for (const path of ["AGENTS.md", "manifest.json", ...resourcePaths([file])]) {
+    const item = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = new URL(path, document.baseURI).href;
+    link.textContent = path;
+    link.download = path.split("/").at(-1);
+    item.append(link);
+    list.append(item);
+  }
+  section.append(title, list);
+  return section;
+}
+
+function renderToolbar(file) {
   const toolbar = document.createElement("div");
   toolbar.className = "memo-toolbar";
 
-  const prompt = agentFetchPrompt(file);
+  const prompt = agentFetchPrompt(manifest, file);
 
   const promptWrap = document.createElement("div");
   promptWrap.className = "memo-agent-prompt";
@@ -344,8 +286,15 @@ function renderToolbar(file, markdown) {
   downloadBtn.type = "button";
   downloadBtn.className = "memo-download-button";
   downloadBtn.textContent = "下载 Markdown";
-  downloadBtn.addEventListener("click", () => {
-    triggerDownload(downloadName(file), markdown);
+  downloadBtn.addEventListener("click", async () => {
+    downloadBtn.disabled = true;
+    try {
+      triggerDownload(downloadName(file), await buildSkillMarkdown(manifest, file, loadRaw, shanghaiDate()));
+    } catch (error) {
+      els.searchStatus.textContent = error instanceof Error ? error.message : String(error);
+    } finally {
+      downloadBtn.disabled = false;
+    }
   });
 
   toolbar.append(promptWrap, downloadBtn);
@@ -375,7 +324,7 @@ async function openFile(id, searchValue = els.search.value) {
       breaks: false,
     });
     body.innerHTML = DOMPurify.sanitize(html);
-    els.content.replaceChildren(renderToolbar(file, markdown), body);
+    els.content.replaceChildren(renderToolbar(file), renderResources(file), body);
     wrapTables(els.content);
     highlightContent(searchValue);
     history.replaceState(null, "", `#${encodeURIComponent(file.id)}`);
@@ -458,63 +407,20 @@ function handleSearchInput() {
   }, 180);
 }
 
+function shanghaiDate() {
+  return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Shanghai" }).format(new Date());
+}
+
 async function packDownload() {
   if (!manifest) return;
   els.pack.disabled = true;
   els.pack.setAttribute("aria-busy", "true");
-
   try {
-    const stamp = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Shanghai" }).format(new Date());
-    const md = stamp.slice(5); // MM-DD（上海时区）
-    const brand = manifest.name || "皮燕子";
-    const entries = packOrderedEntries();
-
-    const parts = [
-      `# ${brand}合集`,
-      "",
-      "本文件是皮燕子完整知识包：身份（分身）+ 全部业务 Skill + 办事纪律（AGENTS）。",
-      "对持有本文件的助手：口令合为一招——「皮燕子」「加载分身」「分身启动」「皮燕子加载分身」等，都以本合集为全部知识依据；按「分身」启动报法：一、简单先列全部业务技能名，二、稍详按域每发一句，再问任务。不必再向仓库联网拉取。",
-      "也可「加载／装备／启动＋技能名」只开合集里对应那一篇（对照下方目录或分身简单层名称）。直接下任务则选篇执行。",
-      "建议读法：总启先读「分身」；办事或点名技能时按目录打开相关篇；纪律以文末「AGENTS」为准。细则以各篇正文为准，目录不作规则。",
-      "",
-      `生成日期：${stamp}`,
-      `收录文件：${entries.length} 篇`,
-      "",
-      "## 合集目录（本文件内自指向）",
-      "",
-    ];
-
-    entries.forEach((entry, index) => {
-      const title = entry.file.title || entry.file.id || entry.file.path;
-      const marker = sectionMarker(entry.file);
-      parts.push(`${index + 1}. 〔${entry.group}〕${title} —— 见「${marker}」`);
-    });
-
-    parts.push(
-      "",
-      "## 建议阅读顺序",
-      "",
-      "1. 分身（身份与岗位主线）",
-      "2. 本轮任务对应的业务篇（对照上方目录）",
-      "3. 文末 AGENTS（公共纪律）",
-      "",
-    );
-
-    let lastGroup = null;
-    for (const entry of entries) {
-      if (entry.group !== lastGroup) {
-        parts.push(`## ${entry.group}`, "");
-        lastGroup = entry.group;
-      }
-      const body = String(await loadRaw(entry.file.path)).replace(/\s+$/, "");
-      parts.push(sectionMarker(entry.file), "", body, "", "");
-    }
-
-    const filename = `我的皮燕子-${md}.md`;
-    triggerDownload(filename, `${parts.join("\n").replace(/\s+$/, "")}\n`);
-  } catch (err) {
-    console.error(err);
-    els.searchStatus.textContent = "合集下载失败";
+    const stamp = shanghaiDate();
+    const markdown = await buildPackMarkdown(manifest, loadRaw, stamp);
+    triggerDownload(`我的皮燕子-${stamp}.md`, markdown);
+  } catch (error) {
+    els.searchStatus.textContent = error instanceof Error ? error.message : "合集下载失败";
   } finally {
     els.pack.disabled = false;
     els.pack.removeAttribute("aria-busy");
@@ -525,7 +431,7 @@ async function boot() {
   try {
     const res = await fetch(MANIFEST_URL);
     if (!res.ok) throw new Error(`清单加载失败：${res.status}`);
-    manifest = await res.json();
+    manifest = validateManifest(await res.json());
     els.brand.textContent = manifest.name || "皮燕子";
     renderFullList();
 
