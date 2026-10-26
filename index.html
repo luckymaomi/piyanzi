@@ -17,14 +17,15 @@
         <strong data-brand>皮燕子</strong>
       </a>
 
-      <div class="search-box">
-        <label class="visually-hidden" for="memoSearch">搜索</label>
-        <input id="memoSearch" type="search" placeholder="搜索" autocomplete="off" spellcheck="false">
-        <span id="searchStatus" class="search-status" role="status" aria-live="polite"></span>
+      <div class="pack-prompt-box">
+        <label class="visually-hidden" for="packPrompt">合集启动语</label>
+        <input id="packPrompt" type="text" data-pack-prompt readonly autocomplete="off" spellcheck="false" title="短口令：先下载合集，再复制给 Agent">
+        <button class="pack-prompt-copy" type="button" data-pack-copy title="复制短口令">复制</button>
+        <span class="pack-prompt-status" data-status role="status" aria-live="polite"></span>
       </div>
 
       <nav class="support-actions" aria-label="页面操作">
-        <button class="support-icon-button" type="button" data-pack-download aria-label="下载合集" title="下载合集（单文件 Markdown）">
+        <button class="support-icon-button" type="button" data-pack-download aria-label="下载合集" title="下载合集（自洽单文件 Markdown）">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path>
           </svg>

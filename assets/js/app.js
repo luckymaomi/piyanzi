@@ -1,5 +1,5 @@
 import { validateManifest, listedFiles as catalogFiles, resourcePaths } from "./catalog.mjs";
-import { agentFetchPrompt, buildSkillMarkdown, buildPackMarkdown } from "./knowledge-pack.mjs";
+import { localStartPrompt, localPackPrompt, buildSkillMarkdown, buildPackMarkdown } from "./knowledge-pack.mjs";
 
 const MANIFEST_URL = new URL("../../manifest.json", import.meta.url);
 
@@ -7,17 +7,16 @@ const els = {
   brand: document.querySelector("[data-brand]"),
   nav: document.querySelector("[data-nav]"),
   content: document.querySelector("[data-content]"),
-  search: document.querySelector("#memoSearch"),
-  searchStatus: document.querySelector("#searchStatus"),
+  status: document.querySelector("[data-status]"),
+  packPrompt: document.querySelector("[data-pack-prompt]"),
   pack: document.querySelector("[data-pack-download]"),
+  packCopy: document.querySelector("[data-pack-copy]"),
   sidebarMenu: document.querySelector("#sidebarMenu"),
 };
 
 let manifest = null;
 let activeId = null;
 let renderVersion = 0;
-let searchVersion = 0;
-let searchTimer;
 const cache = new Map();
 
 function listedFiles() {
@@ -31,8 +30,8 @@ function stripFrontMatter(raw) {
   return raw.slice(end + 4).replace(/^\s+/, "");
 }
 
-function normalizeQuery(value) {
-  return String(value || "").trim().toLocaleLowerCase("zh-CN");
+function setStatus(text) {
+  if (els.status) els.status.textContent = text || "";
 }
 
 async function fetchText(path) {
@@ -103,12 +102,23 @@ async function copyText(text) {
   area.remove();
 }
 
+async function flashButton(button, okText, failText, restore) {
+  const prev = restore || button.textContent;
+  try {
+    button.textContent = okText;
+  } catch {
+    button.textContent = failText;
+  }
+  window.setTimeout(() => {
+    button.textContent = prev;
+  }, 1200);
+}
+
 function closeMobileMenu() {
   if (!els.sidebarMenu || window.matchMedia("(min-width: 768px)").matches) return;
   const collapse = window.bootstrap?.Collapse?.getOrCreateInstance(els.sidebarMenu, {
     toggle: false,
   });
-  // Bootstrap 在展开动画中忽略 hide；选择较快时等展开完成再收起。
   if (els.sidebarMenu.classList.contains("collapsing")) {
     els.sidebarMenu.addEventListener("shown.bs.collapse", () => collapse?.hide(), { once: true });
     return;
@@ -133,27 +143,19 @@ function markActive(id) {
   });
 }
 
-function createNavLink(file, snippet) {
+function createNavLink(file) {
   const link = document.createElement("a");
   link.href = `#${encodeURIComponent(file.id)}`;
-  link.className = `nav-link${snippet ? " search-result" : ""}`;
+  link.className = "nav-link";
   link.dataset.id = file.id;
 
   const head = document.createElement("span");
   head.className = "memo-link-head";
-
   const title = document.createElement("span");
-  title.className = snippet ? "search-result-name" : "memo-link-title";
+  title.className = "memo-link-title";
   title.textContent = file.title;
   head.appendChild(title);
   link.appendChild(head);
-
-  if (snippet) {
-    const summary = document.createElement("span");
-    summary.className = "search-result-snippet";
-    summary.textContent = snippet;
-    link.appendChild(summary);
-  }
 
   link.addEventListener("click", (event) => {
     event.preventDefault();
@@ -171,63 +173,14 @@ function renderFullList() {
   if (activeId) markActive(activeId);
 }
 
-function makeSnippet(markdown, query) {
-  const plain = stripFrontMatter(markdown).replace(/\s+/g, " ").trim();
-  const lower = plain.toLocaleLowerCase("zh-CN");
-  const index = lower.indexOf(query);
-  if (index < 0) return "";
-  const start = Math.max(0, index - 24);
-  const end = Math.min(plain.length, index + query.length + 48);
-  return `${start > 0 ? "…" : ""}${plain.slice(start, end)}${end < plain.length ? "…" : ""}`;
-}
-
-function highlightContent(query) {
-  const q = normalizeQuery(query);
-  if (!q) return;
-
-  const nodes = [];
-  const walker = document.createTreeWalker(els.content, NodeFilter.SHOW_TEXT, {
-    acceptNode(node) {
-      const parent = node.parentElement;
-      if (!parent || parent.closest("mark, script, style, .memo-toolbar")) {
-        return NodeFilter.FILTER_REJECT;
-      }
-      return node.nodeValue?.toLocaleLowerCase("zh-CN").includes(q)
-        ? NodeFilter.FILTER_ACCEPT
-        : NodeFilter.FILTER_REJECT;
-    },
-  });
-  while (walker.nextNode()) nodes.push(walker.currentNode);
-
-  nodes.forEach((node) => {
-    const source = node.nodeValue || "";
-    const lowerSource = source.toLocaleLowerCase("zh-CN");
-    const fragment = document.createDocumentFragment();
-    let cursor = 0;
-    let matchIndex = lowerSource.indexOf(q);
-
-    while (matchIndex >= 0) {
-      fragment.append(source.slice(cursor, matchIndex));
-      const mark = document.createElement("mark");
-      mark.className = "search-highlight";
-      mark.textContent = source.slice(matchIndex, matchIndex + q.length);
-      fragment.append(mark);
-      cursor = matchIndex + q.length;
-      matchIndex = lowerSource.indexOf(q, cursor);
-    }
-    fragment.append(source.slice(cursor));
-    node.replaceWith(fragment);
-  });
-
-  els.content.querySelector(".search-highlight")?.scrollIntoView({ block: "center" });
-}
-
 function renderResources(file) {
+  const paths = resourcePaths([file]);
+  if (!paths.length) return null;
   const section = document.createElement("details");
   const title = document.createElement("summary");
-  title.textContent = "公共规约与配套资源（模板、脚本及参考资料）";
+  title.textContent = "配套资源";
   const list = document.createElement("ul");
-  for (const path of ["AGENTS.md", "manifest.json", ...resourcePaths([file])]) {
+  for (const path of paths) {
     const item = document.createElement("li");
     const link = document.createElement("a");
     link.href = new URL(path, document.baseURI).href;
@@ -244,64 +197,43 @@ function renderToolbar(file) {
   const toolbar = document.createElement("div");
   toolbar.className = "memo-toolbar";
 
-  const prompt = agentFetchPrompt(manifest, file);
-
-  const promptWrap = document.createElement("div");
-  promptWrap.className = "memo-agent-prompt";
-
-  const promptField = document.createElement("input");
-  promptField.type = "text";
-  promptField.className = "memo-agent-prompt-input";
-  promptField.readOnly = true;
-  promptField.value = prompt;
-  promptField.title = "联网拉取本篇 Skill 的一句话指令";
-  promptField.addEventListener("focus", () => promptField.select());
-  promptField.addEventListener("click", () => promptField.select());
-
   const copyBtn = document.createElement("button");
   copyBtn.type = "button";
   copyBtn.className = "memo-download-button";
-  copyBtn.textContent = "复制";
-  copyBtn.title = "复制后粘贴给 Agent，独立启动本篇 Skill";
+  copyBtn.textContent = "复制启动语";
+  copyBtn.title = "先下载本篇，再把启动语和文件一起给 Agent";
   copyBtn.addEventListener("click", async () => {
     try {
-      await copyText(prompt);
-      const prev = copyBtn.textContent;
-      copyBtn.textContent = "已复制";
-      window.setTimeout(() => {
-        copyBtn.textContent = prev;
-      }, 1200);
+      await copyText(localStartPrompt(file));
+      await flashButton(copyBtn, "已复制", "复制失败", "复制启动语");
     } catch (err) {
       console.error(err);
-      copyBtn.textContent = "复制失败";
-      window.setTimeout(() => {
-        copyBtn.textContent = "复制";
-      }, 1200);
+      await flashButton(copyBtn, "复制失败", "复制失败", "复制启动语");
     }
   });
-
-  promptWrap.append(promptField, copyBtn);
 
   const downloadBtn = document.createElement("button");
   downloadBtn.type = "button";
   downloadBtn.className = "memo-download-button";
-  downloadBtn.textContent = "下载 Markdown";
+  downloadBtn.textContent = "下载本篇";
+  downloadBtn.title = "下载含公共规约的自洽 Markdown";
   downloadBtn.addEventListener("click", async () => {
     downloadBtn.disabled = true;
     try {
       triggerDownload(downloadName(file), await buildSkillMarkdown(manifest, file, loadRaw, shanghaiDate()));
+      setStatus("");
     } catch (error) {
-      els.searchStatus.textContent = error instanceof Error ? error.message : String(error);
+      setStatus(error instanceof Error ? error.message : String(error));
     } finally {
       downloadBtn.disabled = false;
     }
   });
 
-  toolbar.append(promptWrap, downloadBtn);
+  toolbar.append(downloadBtn, copyBtn);
   return toolbar;
 }
 
-async function openFile(id, searchValue = els.search.value) {
+async function openFile(id) {
   const version = ++renderVersion;
   const file = listedFiles().find((f) => f.id === id);
   if (!file) {
@@ -324,9 +256,12 @@ async function openFile(id, searchValue = els.search.value) {
       breaks: false,
     });
     body.innerHTML = DOMPurify.sanitize(html);
-    els.content.replaceChildren(renderToolbar(file), renderResources(file), body);
+    const nodes = [renderToolbar(file)];
+    const resources = renderResources(file);
+    if (resources) nodes.push(resources);
+    nodes.push(body);
+    els.content.replaceChildren(...nodes);
     wrapTables(els.content);
-    highlightContent(searchValue);
     history.replaceState(null, "", `#${encodeURIComponent(file.id)}`);
   } catch (err) {
     if (version !== renderVersion) return;
@@ -344,69 +279,6 @@ function selectFile(id) {
   closeMobileMenu();
 }
 
-async function runSearch(value, version) {
-  const query = normalizeQuery(value);
-  const pool = listedFiles();
-  const settled = await Promise.allSettled(
-    pool.map(async (file) => ({
-      file,
-      markdown: await loadRaw(file.path),
-    }))
-  );
-  if (version !== searchVersion) return;
-  const sources = settled.filter((r) => r.status === "fulfilled").map((r) => r.value);
-  const failed = settled.length - sources.length;
-  const failureNote = failed ? `；${failed} 篇加载失败，可重新输入重试` : "";
-
-  const results = [];
-  for (const { file, markdown } of sources) {
-    const hay = `${file.title}\n${stripFrontMatter(markdown)}`.toLocaleLowerCase("zh-CN");
-    if (!hay.includes(query)) continue;
-    results.push({ file, snippet: makeSnippet(markdown, query) });
-  }
-
-  els.nav.replaceChildren();
-  if (!results.length) {
-    const empty = document.createElement("div");
-    empty.className = "search-empty";
-    empty.textContent = sources.length ? "没有命中" : "技能加载失败，请重试";
-    els.nav.appendChild(empty);
-    els.searchStatus.textContent = `${sources.length ? "没有命中" : "搜索未完成"}${failureNote}`;
-    return;
-  }
-
-  for (const result of results) {
-    els.nav.appendChild(createNavLink(result.file, result.snippet));
-  }
-  els.searchStatus.textContent = `${results.length} 个命中${failureNote}`;
-
-  const current = results.find((r) => r.file.id === activeId) || results[0];
-  await openFile(current.file.id, value);
-}
-
-function handleSearchInput() {
-  const value = els.search.value;
-  const query = normalizeQuery(value);
-  const version = ++searchVersion;
-  if (searchTimer !== undefined) window.clearTimeout(searchTimer);
-
-  if (!query) {
-    els.searchStatus.textContent = "";
-    renderFullList();
-    if (activeId) void openFile(activeId, "");
-    return;
-  }
-
-  els.searchStatus.textContent = "搜索中…";
-  searchTimer = window.setTimeout(() => {
-    void runSearch(value, version).catch((err) => {
-      if (version !== searchVersion) return;
-      console.error(err);
-      els.searchStatus.textContent = "搜索失败，请重新输入重试";
-    });
-  }, 180);
-}
-
 function shanghaiDate() {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Shanghai" }).format(new Date());
 }
@@ -419,11 +291,34 @@ async function packDownload() {
     const stamp = shanghaiDate();
     const markdown = await buildPackMarkdown(manifest, loadRaw, stamp);
     triggerDownload(`我的皮燕子-${stamp}.md`, markdown);
+    setStatus("");
   } catch (error) {
-    els.searchStatus.textContent = error instanceof Error ? error.message : "合集下载失败";
+    setStatus(error instanceof Error ? error.message : "合集下载失败");
   } finally {
     els.pack.disabled = false;
     els.pack.removeAttribute("aria-busy");
+  }
+}
+
+function fillPackPrompt() {
+  if (!manifest || !els.packPrompt) return;
+  els.packPrompt.value = localPackPrompt(manifest);
+}
+
+async function packCopyPrompt() {
+  if (!manifest) return;
+  const text = localPackPrompt(manifest);
+  try {
+    await copyText(text);
+    if (els.packPrompt) {
+      els.packPrompt.focus();
+      els.packPrompt.select();
+    }
+    if (els.packCopy) await flashButton(els.packCopy, "已复制", "失败", "复制");
+    setStatus("");
+  } catch (err) {
+    console.error(err);
+    setStatus("复制失败");
   }
 }
 
@@ -433,6 +328,7 @@ async function boot() {
     if (!res.ok) throw new Error(`清单加载失败：${res.status}`);
     manifest = validateManifest(await res.json());
     els.brand.textContent = manifest.name || "皮燕子";
+    fillPackPrompt();
     renderFullList();
 
     const hash = decodeURIComponent(location.hash.replace(/^#/, ""));
@@ -456,10 +352,14 @@ syncThemeButtons();
 els.pack.addEventListener("click", () => {
   void packDownload();
 });
-els.search.addEventListener("input", handleSearchInput);
+els.packCopy?.addEventListener("click", () => {
+  void packCopyPrompt();
+});
+els.packPrompt?.addEventListener("focus", () => els.packPrompt.select());
+els.packPrompt?.addEventListener("click", () => els.packPrompt.select());
 window.addEventListener("hashchange", () => {
   const id = decodeURIComponent(location.hash.replace(/^#/, ""));
-  if (id && id !== activeId) void openFile(id, els.search.value);
+  if (id && id !== activeId) void openFile(id);
 });
 
 boot();

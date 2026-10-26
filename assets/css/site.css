@@ -2,17 +2,18 @@
     display: grid;
     grid-template-columns: auto minmax(300px, 1fr) auto;
     gap: 22px;
+    align-items: center;
 }
 
-.search-box {
+.pack-prompt-box {
     position: relative;
     min-width: 0;
 }
 
-.search-box input {
+.pack-prompt-box input {
     width: 100%;
     height: 48px;
-    padding: 0 132px 0 16px;
+    padding: 0 88px 0 16px;
     border: 2px solid var(--soft-border);
     outline: 0;
     background: var(--soft-surface-muted);
@@ -20,36 +21,49 @@
     color: var(--soft-ink);
     font-family: "Cascadia Mono", Consolas, "Microsoft YaHei UI", monospace;
     font-size: 13px;
-    transition: box-shadow 150ms ease-out, transform 150ms ease-out, background 150ms ease-out;
+    cursor: text;
 }
 
-.search-box input::placeholder {
-    color: var(--soft-quiet);
-    opacity: 1;
-}
-
-.search-box input:focus {
+.pack-prompt-box input:focus {
     background: var(--soft-surface);
     box-shadow: var(--hard-shadow-focus);
     outline: 2px solid var(--soft-focus);
     outline-offset: 2px;
 }
 
-.search-status {
+.pack-prompt-copy {
     position: absolute;
     top: 50%;
-    right: 14px;
-    width: 108px;
-    overflow: hidden;
-    color: var(--soft-muted);
-    font-family: "Cascadia Mono", Consolas, monospace;
-    font-size: 11px;
-    line-height: 1.4;
-    text-align: right;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    right: 10px;
+    min-height: 32px;
+    padding: 4px 10px;
+    border: 2px solid var(--soft-border);
+    background: var(--soft-surface);
+    box-shadow: var(--hard-shadow-small);
+    color: var(--soft-ink);
+    font-family: "Cascadia Mono", Consolas, "Microsoft YaHei UI", monospace;
+    font-size: 12px;
     transform: translateY(-50%);
-    pointer-events: none;
+}
+
+.pack-prompt-copy:hover,
+.pack-prompt-copy:focus-visible {
+    background: var(--soft-sky);
+    color: var(--soft-on-pastel);
+}
+
+.pack-prompt-copy:focus-visible {
+    outline: 2px solid var(--soft-focus);
+    outline-offset: 2px;
+}
+
+.pack-prompt-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
 }
 
 .workspace {
@@ -186,42 +200,6 @@
     margin: 0 0 18px;
 }
 
-.memo-agent-prompt {
-    display: flex;
-    flex: 1 1 280px;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    min-width: min(100%, 280px);
-}
-
-.memo-agent-prompt-input {
-    flex: 1 1 220px;
-    min-width: 0;
-    min-height: 36px;
-    padding: 6px 10px;
-    border: 2px solid var(--soft-border);
-    background: var(--soft-surface);
-    box-shadow: var(--hard-shadow-small);
-    color: var(--soft-ink);
-    font-family: "Cascadia Mono", Consolas, "Microsoft YaHei UI", monospace;
-    font-size: 11px;
-}
-
-.memo-agent-prompt-input:focus {
-    outline: 2px solid var(--soft-focus);
-    outline-offset: 2px;
-}
-
-.memo-agent-prompt-pack {
-    min-height: 120px;
-    max-height: 280px;
-    resize: vertical;
-    line-height: 1.45;
-    white-space: pre;
-    overflow: auto;
-}
-
 .memo-download-button {
     min-height: 36px;
     padding: 6px 12px;
@@ -266,38 +244,6 @@
     box-shadow: var(--hard-shadow-small);
     color: var(--soft-on-pastel);
     font-weight: 750;
-}
-
-#memoList .search-result,
-#memoList .search-result-name {
-    display: block;
-}
-
-#memoList .search-result-name {
-    font-weight: 750;
-}
-
-#memoList .search-result-snippet {
-    display: -webkit-box;
-    margin-top: 4px;
-    overflow: hidden;
-    color: var(--soft-muted);
-    font-size: 11px;
-    line-height: 1.45;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-}
-
-#memoList .nav-link:hover .search-result-snippet,
-#memoList .nav-link.active .search-result-snippet {
-    color: color-mix(in srgb, var(--soft-on-pastel) 72%, transparent);
-}
-
-.search-empty {
-    padding: 12px 10px;
-    color: var(--soft-muted);
-    font-family: "Cascadia Mono", Consolas, monospace;
-    font-size: 12px;
 }
 
 .main-panel {
@@ -434,19 +380,12 @@
     text-align: left;
 }
 
-.search-highlight {
-    padding: 0 2px;
-    border: 1px solid color-mix(in srgb, var(--soft-border) 56%, transparent);
-    background: var(--soft-pink);
-    color: var(--soft-on-pastel);
-}
-
 @media (max-width: 900px) {
     .memo-bar {
         grid-template-columns: minmax(0, 1fr) auto;
     }
 
-    .memo-bar .search-box {
+    .memo-bar .pack-prompt-box {
         grid-column: 1 / -1;
         grid-row: 2;
     }
@@ -502,16 +441,8 @@
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
-    .memo-bar .search-box {
+    .memo-bar .pack-prompt-box {
         grid-row: 3;
-    }
-
-    .search-box input {
-        padding-right: 14px;
-    }
-
-    .search-status {
-        display: none;
     }
 }
 

@@ -2,8 +2,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { validateManifest, businessCatalog, packOrderedFiles, remoteUrl, resourcePaths } from "../assets/js/catalog.mjs";
-import { agentFetchPrompt, buildSkillMarkdown, buildPackMarkdown } from "../assets/js/knowledge-pack.mjs";
+import { validateManifest, businessCatalog, packOrderedFiles, resourcePaths } from "../assets/js/catalog.mjs";
+import { localStartPrompt, localPackPrompt, buildSkillMarkdown, buildPackMarkdown } from "../assets/js/knowledge-pack.mjs";
 
 const root = new URL("../", import.meta.url);
 const manifest = validateManifest(JSON.parse(await readFile(new URL("manifest.json", root), "utf8")));
@@ -19,21 +19,27 @@ test("新增清单项直接进入技能目录与合集，无需修改分身或�
   assert.equal(new Set(packOrderedFiles(extended).map(file => file.id)).size, extended.files.length);
 });
 
-test("单篇启动与下载携带公共规约、资源入口和所选正文", async () => {
-  const file = manifest.files.find(file => file.id === "waiji-daifei-pifu-hebing");
-  const prompt = agentFetchPrompt(manifest, file);
-  assert.ok(prompt.includes(remoteUrl(manifest, "AGENTS.md")));
-  assert.ok(prompt.includes(remoteUrl(manifest, "manifest.json")));
-  assert.ok(prompt.includes(remoteUrl(manifest, file.path)));
+test("短口令灵活；合集正文自带怎么用与目录", async () => {
+  assert.equal(localPackPrompt(manifest), "皮燕子启动");
+  assert.equal(localStartPrompt(manifest.files.find(f => f.id === "fenshen")), "分身启动");
+  const file = manifest.files.find(entry => entry.id === "waiji-daifei-pifu-hebing");
+  assert.equal(localStartPrompt(file), `加载${file.title}`);
+
+  const pack = await buildPackMarkdown(manifest, load, "2026-10-26");
+  assert.ok(pack.includes("## 怎么用"));
+  assert.ok(pack.includes("## 技能目录"));
+  assert.ok(pack.includes(businessCatalog(manifest).split("\n")[1]));
+
   const markdown = await buildSkillMarkdown(manifest, file, load, "2026-10-26");
+  assert.ok(markdown.includes("## 怎么用"));
   assert.ok(markdown.includes(await load("AGENTS.md")));
   assert.ok(markdown.includes((await load(file.path)).trimEnd()));
   for (const path of resourcePaths([file])) {
-    assert.ok(markdown.includes(remoteUrl(manifest, path)));
+    assert.ok(markdown.includes(`- ${path}`));
   }
 });
 
-test("清单拒绝重复入口；所有配套资源均可读取", async () => {
+test("清单拒绝重复入口；所有配套资源均可读取；合集收录全部正文", async () => {
   assert.throws(() => validateManifest({ ...manifest, files: [...manifest.files, manifest.files[0]] }));
   for (const path of resourcePaths(manifest.files)) {
     assert.ok((await readFile(new URL(path, root))).length > 0, path);
