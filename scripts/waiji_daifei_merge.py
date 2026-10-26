@@ -104,7 +104,7 @@ def parse_date(value) -> date:
     raise ValueError(f"无法解析日期：{value!r}，请用 YYYY-MM-DD")
 
 
-def read_source_rows(path: Path) -> list[dict]:
+def read_source_rows(path: Path, validate: bool = True) -> list[dict]:
     """按字段读取；公司/航空公司同义，无表头时用标准七列。"""
     wb = openpyxl.load_workbook(path, data_only=True)
     ws = wb.active
@@ -145,8 +145,11 @@ def read_source_rows(path: Path) -> list[dict]:
         bad_cell = any(c >= 0 and ws.cell(r, c + 1).data_type == "e" for c in columns)
         if not bad_cell and not any(values[1:]) and re.match(r"^(执行日期|相关要求|说明|备注)([：:]|\s)", seq):
             continue
-        if bad_cell or not company or not st_a or not st_b:
-            raise ValueError(f"{path.name} 第{r}行公司或航站缺失，或存在错误单元格")
+        bad_date = any(c >= 0 and c < len(raw) and isinstance(raw[c], (date, datetime)) for c in columns[1:])
+        input_error = f"{path.name} 第{r}行公司或航站缺失，或存在错误/日期单元格" if bad_cell or bad_date or not company or not st_a or not st_b else ""
+        company_error = columns[1] >= 0 and ws.cell(r, columns[1] + 1).data_type == "e"
+        if validate and input_error:
+            raise ValueError(input_error)
         rows.append(
             {
                 "company": company,
@@ -157,6 +160,8 @@ def read_source_rows(path: Path) -> list[dict]:
                 "tw": norm_tw(tw),
                 "source": path.name,
                 "source_row": r,
+                "input_error": input_error,
+                "company_unknown": not company or company_error or isinstance(raw[columns[1]], (date, datetime)),
             }
         )
     wb.close()
@@ -309,10 +314,24 @@ def run_merge(
     output_path: Path,
     effective: date,
     expiry: date,
+    airlines: list[str] | tuple[str, ...] = ("CSG",),
 ) -> dict:
-    open_rows = read_source_rows(open_path)
-    temp_rows = read_source_rows(temp_path)
+    selected = list(dict.fromkeys(cell_str(code).upper() for code in airlines if cell_str(code)))
+    if not selected:
+        raise ValueError("请至少指定一个航司；货航代码为CSG")
+    raw_open = read_source_rows(open_path, validate=False)
+    raw_temp = read_source_rows(temp_path, validate=False)
+    for row in raw_open + raw_temp:
+        if row["company_unknown"]:
+            raise ValueError(row["input_error"] or "公司为空或无法识别，不能确定批复归属")
+    open_rows = [row for row in raw_open if row["company"].upper() in selected]
+    temp_rows = [row for row in raw_temp if row["company"].upper() in selected]
     merged = open_rows + temp_rows
+    for row in merged:
+        if row["input_error"]:
+            raise ValueError(row["input_error"])
+    if not merged:
+        raise ValueError(f"所选航司{','.join(selected)}在两份源表中没有可处理记录")
 
     shutil.copy2(template_path, output_path)
     wb = openpyxl.load_workbook(output_path)
@@ -360,6 +379,17 @@ def run_merge(
         "output_sha256": sha256(output_path),
         "effective": effective.isoformat(),
         "expiry": expiry.isoformat(),
+        "airlines": selected,
+        "raw_open_rows": len(raw_open),
+        "raw_temp_rows": len(raw_temp),
+        "excluded_rows": len(raw_open) + len(raw_temp) - len(merged),
+        "airline_counts": {
+            code: {
+                "open": sum(row["company"].upper() == code for row in raw_open),
+                "temporary": sum(row["company"].upper() == code for row in raw_temp),
+            }
+            for code in sorted({row["company"].upper() for row in raw_open + raw_temp})
+        },
         "open_rows": len(open_rows),
         "temp_rows": len(temp_rows),
         "merged_rows": len(merged),
@@ -529,6 +559,8 @@ def write_compare_report(path: Path, merge_report: dict, cmp: dict) -> None:
     lines.append(f"2. 临开：{merge_report['temp_path']}")
     lines.append(f"3. 模板：{merge_report['template_path']}")
     lines.append(f"4. 生效/失效：{merge_report['effective']} ~ {merge_report['expiry']}")
+    lines.append(f"5. 航司范围：{'、'.join(merge_report.get('airlines', [])) or '未提供合并报告，需核实范围'}")
+    lines.append(f"6. 原始开放{merge_report.get('raw_open_rows', '?')}+临开{merge_report.get('raw_temp_rows', '?')}；排除未选航司{merge_report.get('excluded_rows', '?')}条")
     lines.append("")
     lines.append("二、产出规模")
     lines.append(
@@ -582,6 +614,7 @@ def main(argv=None) -> int:
     m.add_argument("--season", default="", help="航季标签，如 2026夏秋；省略则尝试从源文件名推断")
     m.add_argument("--effective", required=True, help="生效日期 YYYY-MM-DD")
     m.add_argument("--expiry", required=True, help="失效日期 YYYY-MM-DD")
+    m.add_argument("--airline", action="append", required=True, help="已确认的航司代码，货航为CSG；多航司重复传入")
     m.add_argument("--report-json", default="", help="可选：机器可读报告 json")
 
     c = sub.add_parser("compare", help="与旧合并表比对")
@@ -599,6 +632,7 @@ def main(argv=None) -> int:
     a.add_argument("--reference", required=True, help="旧版合并表，用于比对")
     a.add_argument("--effective", required=True)
     a.add_argument("--expiry", required=True)
+    a.add_argument("--airline", action="append", required=True, help="已确认的航司代码，货航为CSG；多航司重复传入")
     a.add_argument("--report-txt", default="", help="省略则与结果簿同目录、同主名+_比对报告.txt")
     a.add_argument("--report-json", default="")
 
@@ -621,6 +655,7 @@ def main(argv=None) -> int:
             out,
             parse_date(args.effective),
             parse_date(args.expiry),
+            airlines=args.airline,
         )
         if args.report_json:
             save_json(args.report_json, report)
@@ -652,6 +687,7 @@ def main(argv=None) -> int:
             out,
             parse_date(args.effective),
             parse_date(args.expiry),
+            airlines=args.airline,
         )
         jpath = Path(args.report_json) if args.report_json else out.with_name(out.stem + "_实跑.json")
         save_json(jpath, report)

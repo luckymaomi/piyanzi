@@ -3,7 +3,9 @@ import sys
 sys.dont_write_bytecode = True
 import tempfile
 import unittest
-from datetime import date
+from contextlib import redirect_stderr
+from io import StringIO
+from datetime import date, datetime
 from pathlib import Path
 
 import openpyxl
@@ -11,6 +13,56 @@ import waiji_daifei_merge as app
 
 
 class ApprovalTests(unittest.TestCase):
+    def test_cli_requires_confirmed_airline_before_reading_files(self):
+        with redirect_stderr(StringIO()), self.assertRaises(SystemExit) as result:
+            app.main(['merge', '--open', 'not-read.xlsx', '--temp', 'not-read.xlsx', '--effective', '2026-10-25', '--expiry', '2027-03-27'])
+        self.assertEqual(result.exception.code, 2)
+
+    def test_airline_scope_defaults_and_explicit_selection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            paths = [directory / 'open.xlsx', directory / 'temp.xlsx']
+            for path in paths:
+                workbook = openpyxl.Workbook()
+                sheet = workbook.active
+                sheet.append(['序号', '公司', '航站', '航站', '去程', '回程', '是否有台湾地区飞行员'])
+                for i, code in enumerate(['CSN', 'CSG', ' csg ', 'CSGX'], 1):
+                    sheet.append([i, code, '广州', '伦敦', code, '', '否'])
+                workbook.save(path)
+            output = directory / 'output.xlsx'
+            report = app.run_merge(*paths, app.DEFAULT_TEMPLATE, output, date(2026, 10, 25), date(2027, 3, 27))
+            self.assertEqual(report['airlines'], ['CSG'])
+            self.assertEqual((report['raw_open_rows'], report['raw_temp_rows'], report['excluded_rows'], report['merged_rows']), (4, 4, 4, 4))
+            workbook = openpyxl.load_workbook(output)
+            self.assertEqual([r[1] for r in list(workbook[app.SHEET_MERGE].values)[1:]], ['CSG', 'csg', 'CSG', 'csg'])
+            report = app.run_merge(*paths, app.DEFAULT_TEMPLATE, output, date(2026, 10, 25), date(2027, 3, 27), airlines=['CSN', 'CSGX'])
+            self.assertEqual(report['merged_rows'], 4)
+            for selection in [[], ['UNKNOWN']]:
+                with self.assertRaises(ValueError):
+                    app.run_merge(*paths, app.DEFAULT_TEMPLATE, output, date(2026, 10, 25), date(2027, 3, 27), airlines=selection)
+
+    def test_unselected_bad_rows_do_not_block_selected_scope(self):
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            paths = [directory / 'open.xlsx', directory / 'temp.xlsx']
+            for path in paths:
+                workbook = openpyxl.Workbook()
+                sheet = workbook.active
+                sheet.append([1, 'CSG', '广州', '伦敦', 'G', 'B'])
+                sheet.append([2, 'CSN', '广州', '', 'G', 'B'])
+                sheet.append([3, 'CSN', '广州', '伦敦', datetime(2026, 10, 25), 'B'])
+                workbook.save(path)
+            output = directory / 'output.xlsx'
+            report = app.run_merge(*paths, app.DEFAULT_TEMPLATE, output, date(2026, 10, 25), date(2027, 3, 27))
+            self.assertEqual(report['merged_rows'], 2)
+            with self.assertRaises(ValueError):
+                app.run_merge(*paths, app.DEFAULT_TEMPLATE, output, date(2026, 10, 25), date(2027, 3, 27), airlines=['CSN'])
+            workbook = openpyxl.load_workbook(paths[0])
+            workbook.active.append([4, '', '广州', '伦敦', 'G', 'B'])
+            workbook.save(paths[0])
+            with self.assertRaises(ValueError):
+                app.run_merge(*paths, app.DEFAULT_TEMPLATE, output, date(2026, 10, 25), date(2027, 3, 27))
+
     def test_header_alias_and_first_data_row(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "input.xlsx"
