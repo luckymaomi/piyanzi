@@ -1,16 +1,9 @@
 /** 启动口令与 Markdown 交付；细则写进下载件正文，复制框只留短口令。 */
 import { businessCatalog, packOrderedFiles, resourcePaths } from "./catalog.mjs";
 
-/** 单篇短口令：文件已附上时，口头怎么点名即可。 */
-export function localStartPrompt(file) {
-  if (file.id === "AGENTS") return "皮燕子";
-  if (file.id === "fenshen") return "分身启动";
-  return `加载${file.title}`;
-}
-
-/** 合集短口令：与分身总启同调，说法不挑。 */
+/** 顶栏短口令：克隆仓库并加载皮燕子。 */
 export function localPackPrompt(_manifest) {
-  return "皮燕子启动";
+  return "克隆 https://github.com/luckymaomi/piyanzi ，并加载皮燕子";
 }
 
 const marker = file => `===== ${file.title}（${file.path}） =====`;
@@ -20,8 +13,8 @@ function usageBlock(kind) {
     return [
       "## 怎么用",
       "",
-      "1. 把本文件交给 Agent，说「皮燕子启动」「分身启动」或「加载分身」均可。",
-      "2. 先读文内 AGENTS，再读分身；按下方技能目录报名，点名某技能只读该篇正文。",
+      "1. 克隆本仓库后加载皮燕子（或分身启动、加载分身，说法不挑）。",
+      "2. 先读 AGENTS，再读分身；按下方技能目录报名，点名某技能只读该篇正文。",
       "3. 已有具体任务直接办，不必先念完整报法。",
       "4. 配套模板、脚本见文末仓库相对路径；原始业务表由主人另附。",
       "",
@@ -30,8 +23,8 @@ function usageBlock(kind) {
   return [
     "## 怎么用",
     "",
-    "1. 把本文件交给 Agent，用短口令点名本篇即可（如「分身启动」「加载××」）。",
-    "2. 先读文内 AGENTS，再读本篇；完整弹药名单见下方技能目录（仅目录，其它篇正文在合集里）。",
+    "1. 在仓库里加载本篇（如「分身启动」「加载××」）。",
+    "2. 先读文内 AGENTS，再读本篇；完整弹药名单见下方技能目录（仅目录，其它篇正文在仓库里）。",
     "3. 已有具体任务直接办。",
     "4. 若本篇列有配套资源，见文末仓库相对路径；原始业务表另附。",
     "",

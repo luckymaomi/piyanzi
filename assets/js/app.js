@@ -1,5 +1,5 @@
 import { validateManifest, listedFiles as catalogFiles, resourcePaths } from "./catalog.mjs";
-import { localStartPrompt, localPackPrompt, buildSkillMarkdown, buildPackMarkdown } from "./knowledge-pack.mjs";
+import { localPackPrompt, buildSkillMarkdown, buildPackMarkdown } from "./knowledge-pack.mjs";
 
 const MANIFEST_URL = new URL("../../manifest.json", import.meta.url);
 
@@ -197,21 +197,6 @@ function renderToolbar(file) {
   const toolbar = document.createElement("div");
   toolbar.className = "memo-toolbar";
 
-  const copyBtn = document.createElement("button");
-  copyBtn.type = "button";
-  copyBtn.className = "memo-download-button";
-  copyBtn.textContent = "复制启动语";
-  copyBtn.title = "先下载本篇，再把启动语和文件一起给 Agent";
-  copyBtn.addEventListener("click", async () => {
-    try {
-      await copyText(localStartPrompt(file));
-      await flashButton(copyBtn, "已复制", "复制失败", "复制启动语");
-    } catch (err) {
-      console.error(err);
-      await flashButton(copyBtn, "复制失败", "复制失败", "复制启动语");
-    }
-  });
-
   const downloadBtn = document.createElement("button");
   downloadBtn.type = "button";
   downloadBtn.className = "memo-download-button";
@@ -229,7 +214,7 @@ function renderToolbar(file) {
     }
   });
 
-  toolbar.append(downloadBtn, copyBtn);
+  toolbar.append(downloadBtn);
   return toolbar;
 }
 

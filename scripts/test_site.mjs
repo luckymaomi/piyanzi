@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { validateManifest, businessCatalog, packOrderedFiles, resourcePaths } from "../assets/js/catalog.mjs";
-import { localStartPrompt, localPackPrompt, buildSkillMarkdown, buildPackMarkdown } from "../assets/js/knowledge-pack.mjs";
+import { localPackPrompt, buildSkillMarkdown, buildPackMarkdown } from "../assets/js/knowledge-pack.mjs";
 
 const root = new URL("../", import.meta.url);
 const manifest = validateManifest(JSON.parse(await readFile(new URL("manifest.json", root), "utf8")));
@@ -19,11 +19,12 @@ test("新增清单项直接进入技能目录与合集，无需修改分身或�
   assert.equal(new Set(packOrderedFiles(extended).map(file => file.id)).size, extended.files.length);
 });
 
-test("短口令灵活；合集正文自带怎么用与目录", async () => {
-  assert.equal(localPackPrompt(manifest), "皮燕子启动");
-  assert.equal(localStartPrompt(manifest.files.find(f => f.id === "fenshen")), "分身启动");
+test("顶栏口令为克隆仓库并加载；合集正文自带怎么用与目录", async () => {
+  assert.equal(
+    localPackPrompt(manifest),
+    "克隆 https://github.com/luckymaomi/piyanzi ，并加载皮燕子",
+  );
   const file = manifest.files.find(entry => entry.id === "waiji-daifei-pifu-hebing");
-  assert.equal(localStartPrompt(file), `加载${file.title}`);
 
   const pack = await buildPackMarkdown(manifest, load, "2026-10-26");
   assert.ok(pack.includes("## 怎么用"));

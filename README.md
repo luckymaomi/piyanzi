@@ -2,60 +2,49 @@
 
 # 皮燕子
 
+南货航飞行部训练管理室 · 资质管理岗的工作人格分身
+
 [项目主页](https://luckymaomi.github.io/piyanzi/) · [GitHub](https://github.com/luckymaomi/piyanzi)
 
 <p>
-  <img alt="Static site" src="https://img.shields.io/badge/Architecture-static%20GitHub%20Pages-0f766e">
-  <a href="https://www.python.org/"><img alt="Python 3" src="https://img.shields.io/badge/Python-3-3776AB"></a>
-  <a href="https://marked.js.org/"><img alt="marked" src="https://img.shields.io/badge/Markdown-marked-222222"></a>
-  <a href="./LICENSE"><img alt="MIT License" src="https://img.shields.io/github/license/luckymaomi/piyanzi?color=0f766e"></a>
+  <img alt="狗屎工作" src="https://img.shields.io/badge/Job-狗屎工作-6b4f3a">
+  <img alt="不是狗屁" src="https://img.shields.io/badge/Bullshit-不是狗屁工作-0f766e">
+  <img alt="资本主义" src="https://img.shields.io/badge/Capitalism-还得上班-222222">
+  <img alt="长假失忆" src="https://img.shields.io/badge/Holiday-长假回来会失忆-b45309">
+  <img alt="咸鱼" src="https://img.shields.io/badge/Dream-躺平当咸鱼-64748b">
+  <a href="./LICENSE"><img alt="MIT" src="https://img.shields.io/github/license/luckymaomi/piyanzi?color=0f766e"></a>
 </p>
+
 </div>
 
-皮燕子是业务 Skill 合集：网页浏览侧栏选篇，下载单篇或整包合集 Markdown，再把本地文件交给 Agent。主路径是「下载 → 本地附文」，不是远程拉取链。
+大卫·格雷伯在《狗屁工作》（Bullshit Jobs）里把工作分成两类。狗屁工作是连干的人自己都觉得多余，社会上可有可无甚至有害。狗屎工作是真有人接、真有后果，离开了会出事，只是又累又烦，没人真心热爱。资质管理这一摊——培训盯期、代码对照、录入核对、迎审填表、规章翻条文——就是狗屎工作。
 
-职责分离：`AGENTS.md` 管公共纪律，`manifest.json` 是技能目录的唯一来源，`core/fenshen.md` 只管身份与岗位背景，各业务篇维护各自流程。下载件自洽（含公共规约与文内技能目录）；技能增减只改清单与对应业务篇，不必改分身。目录分组及配套资源也由清单维护。
+没人热爱狗屎工作。春节、国庆一放假回来，以前怎么干的经常想不起来，表也认生，例外也忘光。皮燕子是挂在这个岗位上的工作人格分身。平时当个搭档，重复的事先写进去，人少记一点，回来也不用每次从头摸。人不在，也能按同一套口径接着弄。想休假了，辛苦好同事对照着帮我看看有没有漏。真忘干净了，打开它，至少知道自己到底在干什么。
 
-## 技能目录
+这套办法我觉得绝对顶尖。飞行部又不是造火箭，不需要什么函数，也不需要什么复杂系统。几份 Markdown 把事写明白就完了。我的梦想就是少接活、能躺就躺，最好当一条咸鱼。
 
-当前名称与入口直接读取 [manifest.json](./manifest.json)，浏览页自动生成导航。新增技能只需写 `core/技能名.md`（含 name、description、报装、综述）并加入清单，无需改分身、规约或本页的目录副本。
+克隆 [luckymaomi/piyanzi](https://github.com/luckymaomi/piyanzi)，加载皮燕子就行。也可以先逛[项目主页](https://luckymaomi.github.io/piyanzi/)。当前服务南货航飞行部（中国南方航空货运有限公司）。
 
-## 本地预览
+## 以下是我的工作内容（大概是吧）
 
-仓库根目录执行：
+也许以后还会往表里塞新行。但愿别。活已经够狗屎了，谁还想自愿接更多。
 
-```powershell
-python index.py
-```
-
-默认打开 `http://localhost:4570/index.html`。常用参数：`--port`、`--no-open`、`--check`。
-
-网页运行所需的 Bootstrap、marked 15.0.11 与 DOMPurify 3.2.6 均随 `assets/vendor/` 提供，本地浏览无需CDN；第三方许可与资源一同保留。
-
-静态站仅需 Python 3.10+，不需要安装依赖。Excel 工具另执行：
-
-```powershell
-python -m pip install -r requirements.txt
-```
-
-`python -B -X utf8 index.py --check` 检查清单字段与重复入口、技能注册、配套文件和页面本地资源引用。`node --test scripts/test_site.mjs` 使用 Node 内置测试验证目录扩展、单篇与合集交付；不需安装 npm 依赖，不额外引入测试框架或CI。
-
-## 工作文件与依赖
-
-必要辅助脚本统一放在 `scripts/`，目前为进度查询与回填脚本 `scripts/update_progress.py`；网页启动入口 `index.py` 留在根目录。最终业务产物保留在根目录，Excel和本轮记录等不入库。
-
-合集／单篇下载件自带「怎么用」、技能目录与正文；顶栏复制短口令默认是「皮燕子启动」，右侧下载整包。单篇页可另下本篇并复制「加载××」。配套模板与脚本只列仓库相对路径。前端在 `catalog.mjs`、`knowledge-pack.mjs`、`app.js`。
-
-外籍批复技能以业务原则和本轮表格语义为依据，不附固定 Python 执行脚本；可使用 watchdog 的“外籍航线批复录入”APP，并从原始输入独立核验结果。
-
-填表脚本仅作辅助。使用前先调研本轮真实表格结构，字段映射、名单与目标格以实表和主人确认的口径为准，不直接套用历史样例。
+| 名称 | 说明 |
+| --- | --- |
+| 分身 | 对齐岗位身份与主线，列出可加载弹药，承接本轮任务 |
+| 飞行部培训规则速查 | 八项培训的有效期、窗口和续期口径，含口算样例 |
+| 培训潜规则 | 排课里不能过期与均衡、特殊人群、提前量、安保／TSA、CRM 未参加怎么盯 |
+| 培训完成粗统计 | 按年度培训表粗算人头与期数，整理进报告的表述 |
+| 资质代码 | 资格代码与中文名、类型、岗位机型要求和有效期对照（只查表） |
+| 特殊机场资格代码 | 特殊机场与排班资格码对照（只查表） |
+| 资质录入检查预提示 | 把录入通知拆成每人录什么、先核什么，并标出疑点 |
+| 副驾驶流转更新 | 维护 777 副驾驶积分总表：名单、等级报务、考核预警与可流转 |
+| 一二检和副驾驶进度更新 | 从实力表生成查询模板，核对导出后回填经历与起落 |
+| 检查单手册比对填写 | 按手册原文写符合性声明，需要时抽取带高亮的佐证 PDF |
+| 飞行技术管理手册阅读 | 按条文核对成长路径、教员考试员、保持与恢复等条件 |
+| 飞行人员训练大纲阅读 | 按大纲核对选课、课时、失败处理、保持与恢复 |
+| 外籍带飞批复合并 | 合并开放与临开批复，展开去程／回程，整理成可核验的录入资料 |
 
 ## 开源协议与贡献
 
-本项目遵循 [MIT License](./LICENSE) 开源协议。
-
-欢迎提交 Issue 或 Pull Request 改进 Skill、修复问题、补充文档。贡献时尽量说明问题场景、输入样例、期望结果和验证方式；改能力请改 `core/` 下对应 Skill 文件的报装 / 综述 / 细则，技能目录只改 `manifest.json`，公共纪律改 `AGENTS.md`，岗位身份只改 `core/fenshen.md`。
-
-## 目前
-
-服务于：南货航飞行部、中国南方航空货运有限公司。
+本项目遵循 [MIT License](./LICENSE)。欢迎提交 Issue 或 Pull Request；说清场景、样例、期望结果和验证方式会更好办。改能力请改 `core/` 下对应篇，改目录改 `manifest.json`，公共纪律改 `AGENTS.md`，岗位身份只改 `core/fenshen.md`。提需求可以，提「顺便再加一块活」的话，先自己想想是不是在害人。
