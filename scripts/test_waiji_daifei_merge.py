@@ -13,6 +13,28 @@ import waiji_daifei_merge as app
 
 
 class ApprovalTests(unittest.TestCase):
+    def test_mexico_exact_airports_and_city_expansion(self):
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            paths = [directory / 'open.xlsx', directory / 'temporary.xlsx']
+            for path in paths:
+                workbook = openpyxl.Workbook()
+                for i, station in enumerate(['墨西哥城空运机场', '墨西哥城国际', '墨西哥城'], 1):
+                    workbook.active.append([i, 'CSG', '广州', station, 'G', 'B', '否'])
+                workbook.save(path)
+            output = directory / 'output.xlsx'
+            report = app.run_merge(*paths, app.DEFAULT_TEMPLATE, output, date(2026, 10, 25), date(2027, 3, 27))
+            self.assertEqual(report['unknown_airports'], [])
+            workbook = openpyxl.load_workbook(output)
+            ports = dict(workbook[app.SHEET_APT].iter_rows(min_row=2, max_col=2, values_only=True))
+            self.assertEqual(ports['墨西哥城空运机场'], 'NLU')
+            self.assertEqual(ports['墨西哥城国际'], 'MEX')
+            names = ['墨西哥城空运机场', '墨西哥城国际', '墨西哥城1', '墨西哥城2'] * 2
+            self.assertEqual([r[3] for r in list(workbook[app.SHEET_GO].values)[1:]], names)
+            self.assertEqual([r[2] for r in list(workbook[app.SHEET_BACK].values)[1:]], names)
+            self.assertEqual(workbook[app.SHEET_GO]['F2'].value, '=VLOOKUP(D2,机场列表!A:B,2,FALSE)')
+            self.assertEqual(workbook[app.SHEET_BACK]['E2'].value, '=VLOOKUP(C2,机场列表!A:B,2,FALSE)')
+
     def test_cli_requires_confirmed_airline_before_reading_files(self):
         with redirect_stderr(StringIO()), self.assertRaises(SystemExit) as result:
             app.main(['merge', '--open', 'not-read.xlsx', '--temp', 'not-read.xlsx', '--effective', '2026-10-25', '--expiry', '2027-03-27'])
