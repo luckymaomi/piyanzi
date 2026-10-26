@@ -80,6 +80,12 @@
       "title": "飞行人员训练大纲阅读",
       "path": "core/yuedu-feixing-renyuan-xunlian-dagang.md",
       "listed": true
+    },
+    {
+      "id": "waiji-daifei-pifu-hebing",
+      "title": "外籍带飞批复合并",
+      "path": "core/waiji-daifei-pifu-hebing.md",
+      "listed": true
     }
   ]
 }
