@@ -2,6 +2,28 @@
   "name": "皮燕子",
   "packPrefix": "piyanzi",
   "remoteSkillBase": "https://raw.githubusercontent.com/luckymaomi/piyanzi/master/",
+  "history": [
+    {
+      "title": "技术实力数据挖掘_调研过程记录",
+      "path": "history/技术实力数据挖掘_调研过程记录.md"
+    },
+    {
+      "title": "培训工作画像_从接手到工具",
+      "path": "history/培训工作画像_从接手到工具.md"
+    },
+    {
+      "title": "安保与TSA排课口径-确认",
+      "path": "history/安保与TSA排课口径-确认.md"
+    },
+    {
+      "title": "范式转移_迎审检查单手册比对",
+      "path": "history/范式转移_迎审检查单手册比对.md"
+    },
+    {
+      "title": "范式转移_飞行经历从门户手点到HTTP批跑",
+      "path": "history/范式转移_飞行经历从门户手点到HTTP批跑.md"
+    }
+  ],
   "files": [
     {
       "id": "AGENTS",
@@ -52,8 +74,16 @@
       "listed": true,
       "group": "培训",
       "resources": [
-        "history/安保与TSA排课口径-确认.md"
+        "history/安保与TSA排课口径-确认.md",
+        "core/nanhuhang-feixingbu-qian-guize.md"
       ]
+    },
+    {
+      "id": "nanhuhang-feixingbu-qian-guize",
+      "title": "南货航飞行部潜规则",
+      "path": "core/nanhuhang-feixingbu-qian-guize.md",
+      "listed": true,
+      "group": "通识"
     },
     {
       "id": "zizhi-daima",

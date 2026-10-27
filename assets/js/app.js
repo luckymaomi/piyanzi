@@ -1,5 +1,5 @@
 import { validateManifest, listedFiles as catalogFiles, resourcePaths } from "./catalog.mjs";
-import { localPackPrompt, buildSkillMarkdown, buildPackMarkdown } from "./knowledge-pack.mjs";
+import { localPackPrompt, buildSkillMarkdown, buildPackMarkdown, buildHistoryMarkdown } from "./knowledge-pack.mjs";
 
 const MANIFEST_URL = new URL("../../manifest.json", import.meta.url);
 
@@ -10,6 +10,7 @@ const els = {
   status: document.querySelector("[data-status]"),
   packPrompt: document.querySelector("[data-pack-prompt]"),
   pack: document.querySelector("[data-pack-download]"),
+  historyPack: document.querySelector("[data-history-download]"),
   packCopy: document.querySelector("[data-pack-copy]"),
   sidebarMenu: document.querySelector("#sidebarMenu"),
 };
@@ -285,6 +286,23 @@ async function packDownload() {
   }
 }
 
+async function historyDownload() {
+  if (!manifest || !els.historyPack) return;
+  els.historyPack.disabled = true;
+  els.historyPack.setAttribute("aria-busy", "true");
+  try {
+    const stamp = shanghaiDate();
+    const markdown = await buildHistoryMarkdown(manifest, loadRaw, stamp);
+    triggerDownload(`皮燕子-历史打包-${stamp}.md`, markdown);
+    setStatus("");
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "历史打包下载失败");
+  } finally {
+    els.historyPack.disabled = false;
+    els.historyPack.removeAttribute("aria-busy");
+  }
+}
+
 function fillPackPrompt() {
   if (!manifest || !els.packPrompt) return;
   els.packPrompt.value = localPackPrompt(manifest);
@@ -336,6 +354,9 @@ syncThemeButtons();
 
 els.pack.addEventListener("click", () => {
   void packDownload();
+});
+els.historyPack?.addEventListener("click", () => {
+  void historyDownload();
 });
 els.packCopy?.addEventListener("click", () => {
   void packCopyPrompt();

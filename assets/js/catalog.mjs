@@ -22,6 +22,14 @@ export function validateManifest(manifest) {
     if (!ids.has(id)) throw new Error(`清单缺少公共入口：${id}`);
   }
   if (!/^https?:\/\//.test(manifest.remoteSkillBase || "")) throw new Error("缺少远端资源地址 remoteSkillBase。");
+  if (manifest.history !== undefined) {
+    if (!Array.isArray(manifest.history)) throw new Error("history 必须为列表。");
+    for (const entry of manifest.history) {
+      if (!entry || typeof entry.path !== "string" || !entry.path.trim()) {
+        throw new Error("history 条目须含 path。");
+      }
+    }
+  }
   return manifest;
 }
 

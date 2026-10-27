@@ -117,6 +117,15 @@ def check_project(root: Path) -> None:
     if unregistered:
         raise ValueError(f"Unregistered skills: {sorted(unregistered)}")
 
+    history = manifest.get("history", [])
+    if history is not None:
+        if not isinstance(history, list):
+            raise ValueError("Manifest history must be a list when present.")
+        for item in history:
+            if not isinstance(item, dict) or not isinstance(item.get("path"), str) or not item["path"].strip():
+                raise ValueError("Invalid history entry.")
+            require_file(item["path"])
+
     page = PageResources()
     page.feed(require_file("index.html").read_text(encoding="utf-8"))
     for path in page.paths:

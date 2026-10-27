@@ -71,3 +71,36 @@ export function buildSkillMarkdown(manifest, file, loadRaw, stamp) {
 export function buildPackMarkdown(manifest, loadRaw, stamp) {
   return buildMarkdown(manifest, packOrderedFiles(manifest), loadRaw, stamp, `${manifest.name}合集`, "pack");
 }
+
+/** 历史过程稿打包：manifest.history 列出的 Markdown 合并为一个文件。 */
+export async function buildHistoryMarkdown(manifest, loadRaw, stamp) {
+  const entries = Array.isArray(manifest.history) ? manifest.history : [];
+  if (!entries.length) {
+    throw new Error("清单未配置 history，无法打包历史。");
+  }
+  const parts = [
+    `# ${manifest.name || "皮燕子"} · 历史打包`,
+    "",
+    `生成日期：${stamp}`,
+    "",
+    "## 怎么用",
+    "",
+    "1. 本文件是 history/ 过程底稿合集，**不是**现行技能正文。",
+    "2. 现行口径以仓库 core/ 各技能与 AGENTS 为准；冲突时听技能页。",
+    "3. 技术实力相关精华见「技术实力数据挖掘_调研过程记录」；挖数动手见「南货航飞行部潜规则」。",
+    "",
+    "## 本文件收录",
+    "",
+    ...entries.map((entry, index) => {
+      const title = entry.title || entry.path;
+      return `${index + 1}. ${title} —— ${entry.path}`;
+    }),
+    "",
+  ];
+  for (const entry of entries) {
+    const title = entry.title || entry.path;
+    const marker = `===== ${title}（${entry.path}） =====`;
+    parts.push(marker, "", String(await loadRaw(entry.path)).trimEnd(), "");
+  }
+  return parts.join("\n").trimEnd() + "\n";
+}
