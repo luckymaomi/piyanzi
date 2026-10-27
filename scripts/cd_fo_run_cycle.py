@@ -313,11 +313,11 @@ def main():
 
 ---
 
-## 3. 结论
+## 3. 结论（可贴汇报）
 
-1. **目前 CD 运行周期（晋升降本）**：运行到 C 类约 **{s_foc['平均'] if s_foc else '—'}** 天（中位 **{s_foc['中位数'] if s_foc else '—'}**，有效样本 **{s_foc['n'] if s_foc else 0}**）；运行到 D 类样本 **{s_fod['n'] if s_fod else 0}**，{line(s_fod) if s_fod else '暂无可报均值'}。  
-2. 现势全表 CD **{len(all_cd)}** 人，其中晋升降本仅 **{len(jin_cd)}** 人——CD 存量仍以同机型划转为主。  
-3. 晋升降本尚未到 C 的在途 **{len(zaitu)}** 人，名单见 Excel「04」。
+统计范围为晋升降本副驾驶。从进入货航运行到取得 C 类副驾驶，平均为 {s_foc['平均'] if s_foc else '—'} 天，中位数为 {s_foc['中位数'] if s_foc else '—'} 天，共统计 {s_foc['n'] if s_foc else 0} 人{"（样本较少，宜作量级参考）" if s_foc and s_foc["n"] < 15 else ""}。从进入货航运行到取得 D 类副驾驶，平均为 {s_fod['平均'] if s_fod else '—'} 天，中位数为 {s_fod['中位数'] if s_fod else '—'} 天，共统计 {s_fod['n'] if s_fod else 0} 人{"，样本仅 "+str(s_fod["n"])+" 人，仅供参考" if s_fod and s_fod["n"] < 5 else ""}。辅报：从 B 类副驾驶到取得 C 类副驾驶，平均为 {s_bc['平均'] if s_bc else '—'} 天，中位数为 {s_bc['中位数'] if s_bc else '—'} 天，共统计 {s_bc['n'] if s_bc else 0} 人。
+
+现势全表 CD 类副驾驶 {len(all_cd)} 人，其中晋升降本仅 {len(jin_cd)} 人，CD 存量仍以同机型划转为主。晋升降本尚未取得 C 类的在途 {len(zaitu)} 人，名单见 Excel。
 
 ---
 
