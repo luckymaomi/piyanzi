@@ -202,11 +202,11 @@ function renderToolbar(file) {
   downloadBtn.type = "button";
   downloadBtn.className = "memo-download-button";
   downloadBtn.textContent = "下载本篇";
-  downloadBtn.title = "下载含公共规约的自洽 Markdown";
+  downloadBtn.title = "仅下载本篇 Markdown（不含 AGENTS）";
   downloadBtn.addEventListener("click", async () => {
     downloadBtn.disabled = true;
     try {
-      triggerDownload(downloadName(file), await buildSkillMarkdown(manifest, file, loadRaw, shanghaiDate()));
+      triggerDownload(downloadName(file), await buildSkillMarkdown(file, loadRaw));
       setStatus("");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : String(error));
@@ -305,12 +305,12 @@ async function historyDownload() {
 
 function fillPackPrompt() {
   if (!manifest || !els.packPrompt) return;
-  els.packPrompt.value = localPackPrompt(manifest);
+  els.packPrompt.value = localPackPrompt();
 }
 
 async function packCopyPrompt() {
   if (!manifest) return;
-  const text = localPackPrompt(manifest);
+  const text = localPackPrompt();
   try {
     await copyText(text);
     if (els.packPrompt) {

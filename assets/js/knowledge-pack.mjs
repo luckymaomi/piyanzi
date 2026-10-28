@@ -1,44 +1,33 @@
-/** 启动口令与 Markdown 交付；细则写进下载件正文，复制框只留短口令。 */
+/** 启动口令与 Markdown 交付：单篇原文；合集／历史打包带用法与目录壳。 */
 import { businessCatalog, packOrderedFiles, resourcePaths } from "./catalog.mjs";
 
 /** 顶栏短口令：克隆仓库并加载皮燕子。 */
-export function localPackPrompt(_manifest) {
+export function localPackPrompt() {
   return "克隆 https://github.com/luckymaomi/piyanzi ，并加载皮燕子";
 }
 
 const marker = file => `===== ${file.title}（${file.path}） =====`;
 
-function usageBlock(kind) {
-  if (kind === "pack") {
-    return [
-      "## 怎么用",
-      "",
-      "1. 克隆本仓库后加载皮燕子（或分身启动、加载分身，说法不挑）。",
-      "2. 先读 AGENTS，再读分身；按下方技能目录报名，点名某技能只读该篇正文。",
-      "3. 已有具体任务直接办，不必先念完整报法。",
-      "4. 配套模板、脚本见文末仓库相对路径；原始业务表由主人另附。",
-      "",
-    ];
-  }
+function usageBlock() {
   return [
     "## 怎么用",
     "",
-    "1. 在仓库里加载本篇（如「分身启动」「加载××」）。",
-    "2. 先读文内 AGENTS，再读本篇；完整弹药名单见下方技能目录（仅目录，其它篇正文在仓库里）。",
-    "3. 已有具体任务直接办。",
-    "4. 若本篇列有配套资源，见文末仓库相对路径；原始业务表另附。",
+    "1. 克隆本仓库后加载皮燕子（或分身启动、加载分身，说法不挑）。",
+    "2. 先读 AGENTS，再读分身；按下方技能目录报名，点名某技能只读该篇正文。",
+    "3. 已有具体任务直接办，不必先念完整报法。",
+    "4. 配套模板、脚本见文末仓库相对路径；原始业务表由主人另附。",
     "",
   ];
 }
 
-async function buildMarkdown(manifest, files, loadRaw, stamp, title, kind) {
+async function buildMarkdown(manifest, files, loadRaw, stamp, title) {
   const paths = resourcePaths(files);
   const parts = [
     `# ${title}`,
     "",
     `生成日期：${stamp}`,
     "",
-    ...usageBlock(kind),
+    ...usageBlock(),
     "## 技能目录",
     "",
     businessCatalog(manifest),
@@ -62,14 +51,13 @@ async function buildMarkdown(manifest, files, loadRaw, stamp, title, kind) {
   return parts.join("\n").trimEnd() + "\n";
 }
 
-export function buildSkillMarkdown(manifest, file, loadRaw, stamp) {
-  const rules = manifest.files.find(entry => entry.id === "AGENTS");
-  const files = file.id === "AGENTS" ? [rules] : [rules, file];
-  return buildMarkdown(manifest, files, loadRaw, stamp, file.title, "skill");
+/** 单篇下载：只下该篇原文。 */
+export async function buildSkillMarkdown(file, loadRaw) {
+  return String(await loadRaw(file.path)).trimEnd() + "\n";
 }
 
 export function buildPackMarkdown(manifest, loadRaw, stamp) {
-  return buildMarkdown(manifest, packOrderedFiles(manifest), loadRaw, stamp, `${manifest.name}合集`, "pack");
+  return buildMarkdown(manifest, packOrderedFiles(manifest), loadRaw, stamp, `${manifest.name}合集`);
 }
 
 /** 历史过程稿打包：manifest.history 列出的 Markdown 合并为一个文件。 */
@@ -99,8 +87,8 @@ export async function buildHistoryMarkdown(manifest, loadRaw, stamp) {
   ];
   for (const entry of entries) {
     const title = entry.title || entry.path;
-    const marker = `===== ${title}（${entry.path}） =====`;
-    parts.push(marker, "", String(await loadRaw(entry.path)).trimEnd(), "");
+    const section = `===== ${title}（${entry.path}） =====`;
+    parts.push(section, "", String(await loadRaw(entry.path)).trimEnd(), "");
   }
   return parts.join("\n").trimEnd() + "\n";
 }

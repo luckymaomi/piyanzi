@@ -52,10 +52,6 @@ export function packOrderedFiles(manifest) {
   return [...common, ...[...groupedFiles(others).values()].flat()];
 }
 
-export function remoteUrl(manifest, path) {
-  return new URL(path, manifest.remoteSkillBase.replace(/\/?$/, "/")).href;
-}
-
 export function resourcePaths(files) {
   return [...new Set(files.flatMap(file => file.resources || []))];
 }

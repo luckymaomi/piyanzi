@@ -19,9 +19,9 @@ test("新增清单项直接进入技能目录与合集，无需修改分身或�
   assert.equal(new Set(packOrderedFiles(extended).map(file => file.id)).size, extended.files.length);
 });
 
-test("顶栏口令为克隆仓库并加载；合集正文自带怎么用与目录", async () => {
+test("顶栏口令为克隆仓库并加载；合集带怎么用与目录；单篇只下原文", async () => {
   assert.equal(
-    localPackPrompt(manifest),
+    localPackPrompt(),
     "克隆 https://github.com/luckymaomi/piyanzi ，并加载皮燕子",
   );
   const file = manifest.files.find(entry => entry.id === "waiji-daifei-pifu-hebing");
@@ -31,13 +31,11 @@ test("顶栏口令为克隆仓库并加载；合集正文自带怎么用与目�
   assert.ok(pack.includes("## 技能目录"));
   assert.ok(pack.includes(businessCatalog(manifest).split("\n")[1]));
 
-  const markdown = await buildSkillMarkdown(manifest, file, load, "2026-10-26");
-  assert.ok(markdown.includes("## 怎么用"));
-  assert.ok(markdown.includes(await load("AGENTS.md")));
-  assert.ok(markdown.includes((await load(file.path)).trimEnd()));
-  for (const path of resourcePaths([file])) {
-    assert.ok(markdown.includes(`- ${path}`));
-  }
+  const body = (await load(file.path)).trimEnd() + "\n";
+  const markdown = await buildSkillMarkdown(file, load);
+  assert.equal(markdown, body);
+  assert.ok(!markdown.includes("## 怎么用"));
+  assert.ok(!markdown.includes(await load("AGENTS.md")));
 });
 
 test("清单拒绝重复入口；所有配套资源均可读取；合集收录全部正文", async () => {
