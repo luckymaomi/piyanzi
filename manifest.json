@@ -4,8 +4,8 @@
   "remoteSkillBase": "https://raw.githubusercontent.com/luckymaomi/piyanzi/master/",
   "history": [
     {
-      "title": "技术实力数据挖掘_调研过程记录",
-      "path": "history/技术实力数据挖掘_调研过程记录.md"
+      "title": "飞行部数据挖掘_清洗与分析",
+      "path": "history/飞行部数据挖掘_清洗与分析.md"
     },
     {
       "title": "培训工作画像_从接手到工具",
@@ -85,6 +85,18 @@
       "listed": true,
       "group": "通识"
     },
+    {
+      "id": "shuchu-gongwen-geshi-guiyue",
+      "title": "输出公文格式规约",
+      "path": "core/shuchu-gongwen-geshi-guiyue.md",
+      "listed": true,
+      "group": "通识",
+      "resources": [
+        "templates/工作报告-集团公文格式模板.docx"
+      ]
+    },
+
+
     {
       "id": "zizhi-daima",
       "title": "资质代码",
