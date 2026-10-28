@@ -3,6 +3,7 @@ Thumbs.db
 *.tmp
 *.bak
 .cursor/
+# 当轮临时脚本、中间表、过程产物与任务草稿（不入库）
 _tmp*/
 *_samples.json
 *-迎审*.md

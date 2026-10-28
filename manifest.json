@@ -4,6 +4,10 @@
   "remoteSkillBase": "https://raw.githubusercontent.com/luckymaomi/piyanzi/master/",
   "history": [
     {
+      "title": "货航资质工作理解",
+      "path": "history/货航资质工作理解.md"
+    },
+    {
       "title": "飞行部数据挖掘_清洗与分析",
       "path": "history/飞行部数据挖掘_清洗与分析.md"
     },
@@ -40,25 +44,28 @@
       "group": "身份"
     },
     {
-      "id": "jianchadan-shouce-bidui-tianxie",
-      "title": "检查单手册比对填写",
-      "path": "core/jianchadan-shouce-bidui-tianxie.md",
+      "id": "feixingbu-renyuan-tiantibang",
+      "title": "飞行部人员天梯榜",
+      "path": "core/feixingbu-renyuan-tiantibang.md",
       "listed": true,
-      "group": "迎审"
+      "group": "人员画像"
     },
     {
-      "id": "fujiashi-liuzhuan-gengxin",
-      "title": "副驾驶流转更新",
-      "path": "core/fujiashi-liuzhuan-gengxin.md",
+      "id": "nanhuhang-feixingbu-qian-guize",
+      "title": "南货航飞行部潜规则",
+      "path": "core/nanhuhang-feixingbu-qian-guize.md",
       "listed": true,
-      "group": "副驾驶与进度"
+      "group": "通识与挖数"
     },
     {
-      "id": "peixun-wancheng-cutongji",
-      "title": "培训完成粗统计",
-      "path": "core/peixun-wancheng-cutongji.md",
+      "id": "shuchu-gongwen-geshi-guiyue",
+      "title": "输出公文格式规约",
+      "path": "core/shuchu-gongwen-geshi-guiyue.md",
       "listed": true,
-      "group": "培训"
+      "group": "交付出稿",
+      "resources": [
+        "templates/工作报告-集团公文格式模板.docx"
+      ]
     },
     {
       "id": "peixun-guize-sucha",
@@ -75,28 +82,16 @@
       "group": "培训",
       "resources": [
         "history/安保与TSA排课口径-确认.md",
-        "core/nanhuhang-feixingbu-qian-guize.md"
+        "core/feixingbu-renyuan-tiantibang.md"
       ]
     },
     {
-      "id": "nanhuhang-feixingbu-qian-guize",
-      "title": "南货航飞行部潜规则",
-      "path": "core/nanhuhang-feixingbu-qian-guize.md",
+      "id": "peixun-wancheng-cutongji",
+      "title": "培训完成粗统计",
+      "path": "core/peixun-wancheng-cutongji.md",
       "listed": true,
-      "group": "通识"
+      "group": "培训"
     },
-    {
-      "id": "shuchu-gongwen-geshi-guiyue",
-      "title": "输出公文格式规约",
-      "path": "core/shuchu-gongwen-geshi-guiyue.md",
-      "listed": true,
-      "group": "通识",
-      "resources": [
-        "templates/工作报告-集团公文格式模板.docx"
-      ]
-    },
-
-
     {
       "id": "zizhi-daima",
       "title": "资质代码",
@@ -123,6 +118,13 @@
       ]
     },
     {
+      "id": "fujiashi-liuzhuan-gengxin",
+      "title": "副驾驶流转更新",
+      "path": "core/fujiashi-liuzhuan-gengxin.md",
+      "listed": true,
+      "group": "副驾驶与进度"
+    },
+    {
       "id": "yierjian-fujiashi-jindu-gengxin",
       "title": "一二检和副驾驶进度更新",
       "path": "core/yierjian-fujiashi-jindu-gengxin.md",
@@ -133,6 +135,13 @@
         "templates/飞行经历查询（皇帝版）-模板.xlsx",
         "requirements.txt"
       ]
+    },
+    {
+      "id": "jianchadan-shouce-bidui-tianxie",
+      "title": "检查单手册比对填写",
+      "path": "core/jianchadan-shouce-bidui-tianxie.md",
+      "listed": true,
+      "group": "迎审"
     },
     {
       "id": "yuedu-feixing-jishu-guanli-shouce",
@@ -153,10 +162,7 @@
       "title": "外籍带飞批复合并",
       "path": "core/waiji-daifei-pifu-hebing.md",
       "listed": true,
-      "group": "航季批复",
-      "resources": [
-        "templates/外籍带飞批复合并-模板.xlsx"
-      ]
+      "group": "航季批复"
     }
   ]
 }
